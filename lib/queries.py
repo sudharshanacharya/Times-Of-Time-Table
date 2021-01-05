@@ -25,7 +25,7 @@ class queries:
          """
 
     sub_fac_5th_sem = """
-         create table sub_fac_5th_sem(
+         create table if not exists sub_fac_5th_sem(
          fac_id int unique not null,
          sec varchar(3) not null,
          sub_id int unique not null,
