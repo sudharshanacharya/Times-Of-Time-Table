@@ -9,10 +9,11 @@ class sub:
 def sub_input(no_sub, drop_table = False, create_table = False):
     conn = sqlite3.connect("database/TimesOfTimeTable.db")
     cur = conn.cursor()
-    if drop_table == True:
-        cur.execute("drop table if EXISTS subjects ")
-        print("Table Droped")
-    if create_table == True:
+    if drop_table:
+        queries.drop_table('subjects')
+        # cur.execute("drop table if EXISTS subjects ")
+        print("Table Dropped")
+    if create_table:
         cur.execute(queries.create_table_subjects)
 
     for i in range(no_sub):

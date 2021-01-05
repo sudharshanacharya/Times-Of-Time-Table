@@ -1,3 +1,8 @@
+import sqlite3
+
+conn = sqlite3.connect('database/TimesOfTimeTable.db')
+cur = conn.cursor()
+
 
 class queries:
     create_table_subjects = """
@@ -31,6 +36,9 @@ class queries:
          );
          """
 
+    def drop_table(self, table):
+        cur.execute("drop table if exists ?", (table,))
 
-
-
+    def check_hours(self):
+        cur.execute("select sum(rem_hours) from subjects")
+        return cur.fetchone()
