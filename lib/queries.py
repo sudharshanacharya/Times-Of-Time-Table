@@ -36,6 +36,18 @@ class queries:
          );
          """
 
+    get_a_fac = """
+        select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac_5th_sem where sec = 'A')    """
+    get_b_fac = """
+    select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac_5th_sem where sec = 'B')
+    """
+    get_c_fac = """
+    select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac_5th_sem where sec = 'C')
+    """
+
+    get_rem_hours = """
+    select 
+    """
     def drop_table(self, table):
         cur.execute("drop table if exists ?", (table,))
 
