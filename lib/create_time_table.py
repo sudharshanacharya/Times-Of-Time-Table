@@ -90,11 +90,13 @@ def decrement_hours():
 get_subs()
 init_fac()
 init_sub_hours()
-
+print(subs)
 a = list()
 b = list()
 c = list()
-
+flaga = True
+flagb = True
+flagc = True
 class time_table:
     """ methods used to create time table """
     """ create a view by joining table 'sub_fac' & 'faculty' and 'subjects'table """
@@ -119,89 +121,122 @@ class time_table:
         for sub_d in subs:  # subs is a list of dictionaries
             i += 1
             for sub, type in sub_d.items():
-                if type in ['lab'] and a_hours[sub] > 0 and i in [0, 1, 4]:
-                    a.append(sub)
-                    a_hours[sub] -= 3
-                    class_engaged[a_fac[sub]] = 3
-                    decrement_it.append(a_fac[sub])
-                elif type in ['apti'] and a_hours[sub] > 0 and i in [0, 2, 4, 6]:
-                    a.append(sub)
-                    b.append(sub)
-                    c.append(sub)
-                    a_hours[sub] -= 2
-                    b_hours[sub] -= 2
-                    c_hours[sub] -= 2
-                else:
-                    a.append(sub)
-                    a_hours[sub] -= 1
-                    class_engaged[a_fac[sub]] = 1
-                    decrement_it.append(a_fac[sub])
+                """ for sec a """
+                if len(a) < 7:
+                    if flaga or flagb and type in ['lab'] and a_hours[sub] > 0:
+                        if i not in [0, 1, 4]:
+                            continue
+                        a.append(sub)
+                        a.append(sub)
+                        a.append(sub)
+                        a_hours[sub] -= 3
+                        class_engaged[a_fac[sub]] = 3
+                        decrement_it.append(a_fac[sub])
+                        flaga = False
+                    elif type in ['spl'] and a_hours[sub] > 0:
+                        if i in [0, 2, 4, 6] and len(a) == len(b) and len(b) == len(c):
+                            continue
+                        a.append(sub)
+                        a.append(sub)
+                        b.append(sub)
+                        b.append(sub)
+                        c.append(sub)
+                        c.append(sub)
+                        a_hours[sub] -= 2
+                        b_hours[sub] -= 2
+                        c_hours[sub] -= 2
+                    else:
+                        a.append(sub)
+                        a_hours[sub] -= 1
+                        class_engaged[a_fac[sub]] = 1
+                        decrement_it.append(a_fac[sub])
 
-                """ for sec b """
-                if type in ['lab'] and b_hours[sub] > 0 and not class_engaged[b_fac[sub]] and i in [0, 1, 4]:  # for lab
-                    b.append(sub)
-                    b_hours[sub] -= 3
-                    class_engaged[a_fac[sub]] = 3
-                    decrement_it.append(b_fac[sub])
-                elif b_hours[sub] > 0 and not class_engaged[b_fac[sub]]:  # if faculty is not engaging any other class
-                    b.append(sub)
-                    b_hours[sub] -= 1
-                    class_engaged[a_fac[sub]] = 1
-                    decrement_it.append(b_fac[sub])
-                else:  # if faculty is engaging any other class
-                    """ check for next subject & check if the sub faculty is free ?  """
-                    k = i
-                    for j in range(len(subs) - i):
-                        for sub_d1 in subs:
-                            if not k < 0:
-                                k -= 1
-                                continue
-                            for sub1, type1 in sub_d1.items():
-                                if not class_engaged[b_fac[sub1]]:
-                                    b.append(sub1)
-                                    b_hours[sub1] -= 1
-                                    class_engaged[b_fac[sub1]] = 1
-                                    decrement_it.append(b_fac[sub1])
+                print()
+                print("sec A say Monday: ", a)
+                if len(b) < 7:
+                    """ for sec b """
+                    if type in ['lab'] and b_hours[sub] > 0 and not class_engaged[b_fac[sub]]:
+                        if i not in [0, 1, 4]:
+                            continue
+                        b.append(sub)
+                        b.append(sub)
+                        b.append(sub)
+                        print("lab appended 3 times",b)
+                        b_hours[sub] -= 3
+                        class_engaged[a_fac[sub]] = 3
+                        decrement_it.append(b_fac[sub])
+                    elif b_hours[sub] > 0 and not class_engaged[b_fac[sub]]:  # if faculty is not engaging any other
+                        # class
+                        print("b else if ")
+                        b.append(sub)
+                        b_hours[sub] -= 1
+                        class_engaged[a_fac[sub]] = 1
+                        decrement_it.append(b_fac[sub])
+                    else:  # if faculty is engaging any other class
+                        """ check for next subject & check if the sub faculty is free ?  """
+                        print("b else")
+                        k = i
+                        for j in range(len(subs) - i):
+                            for sub_d1 in subs:
+                                if not k < 0:
+                                    k -= 1
+                                    continue
+                                else:
+                                    for sub1, type1 in sub_d1.items():
+                                        if not class_engaged[b_fac[sub1]]:
+                                            print(sub1)
+                                            b.append(sub1)
+                                            print("sec B say Monday: ", b)
+                                            b_hours[sub1] -= 1
+                                            class_engaged[b_fac[sub1]] = 1
+                                            decrement_it.append(b_fac[sub1])
+                                            break
+                                    break
+                            break
 
-                """ for sec c """
-                if type in ['lab'] and c_hours[sub] > 0 and not class_engaged[c_fac[sub]] and i in [0, 1, 4]:  # for lab
-                    c.append(sub)
-                    c_hours[sub] -= 1
-                    class_engaged[c_fac[sub]] = 3
-                    decrement_it.append(c_fac[sub])
-
-                elif c_hours[sub] > 0 and not class_engaged[c_fac[sub]]:  # if faculty is not engaging any other class
-                    c.append(sub)
-                    c_hours[sub] -= 1
-                    class_engaged[c_fac[sub]] = 1
-                    decrement_it.append(c_fac[sub])
-
-                else:  # if faculty is engaging any other class
-                    """ check sub fac is free? """
-                    k = i
-                    for j in range(len(subs) - i):
-                        for sub_d1 in subs:
-                            if not k < 0:
-                                k -= 1
-                                continue
-                            for sub1, type1 in sub_d1.items():
-                                if not class_engaged[c_fac[sub1]]:
-                                    c.append(sub1)
-                                    c_hours[sub1] -= 1
-                                    class_engaged[c_fac[sub1]] = 1
-                                    decrement_it.append(c_fac[sub1])
-        decrement_hours()
-        """ subjects taken per day is not more than 7 """
-        if i == 7:
-            exit()
-
-
-# time_table
-print("sec A say Monday: ", a)
-print("remaining hours: ",a_hours)
-print()
-print("sec B say Monday: ",b)
-print("remaining hours: ",b_hours)
-print()
-print("sec C say Monday: ",c)
-print("remianing hours: ", c_hours)
+                print("sec B say Monday: ", b)
+                if len(c) < 7:
+                    """ for sec c """
+                    if flaga and type in ['lab'] and c_hours[sub] > 0 and not class_engaged[c_fac[sub]]:  #
+                        # for lab
+                        if i not in [0, 1, 4]:
+                            continue
+                        c.append(sub)
+                        c.append(sub)
+                        c.append(sub)
+                        c_hours[sub] -= 3
+                        class_engaged[c_fac[sub]] = 3
+                        decrement_it.append(c_fac[sub])
+                    elif c_hours[sub] > 0 and not class_engaged[c_fac[sub]]:  # if faculty is not engaging any other
+                        # class
+                        c.append(sub)
+                        c_hours[sub] -= 1
+                        class_engaged[c_fac[sub]] = 1
+                        decrement_it.append(c_fac[sub])
+                    else:  # if faculty is engaging any other class
+                        """ check sub fac is free? """
+                        k = i
+                        for j in range(len(subs) - i):
+                            for sub_d1 in subs:
+                                if not k < 0:
+                                    k -= 1
+                                    continue
+                                else:
+                                    for sub1, type1 in sub_d1.items():
+                                        if not class_engaged[c_fac[sub1]]:
+                                            c.append(sub1)
+                                            c_hours[sub1] -= 1
+                                            class_engaged[c_fac[sub1]] = 1
+                                            decrement_it.append(c_fac[sub1])
+                                            break
+                                    break
+                            break
+                print()
+                print("sec C say Monday: ", c)
+            decrement_hours()
+            """ subjects taken per day is not more than 7 """
+            if i == 7:
+                print("exiting")
+                break
+        flaga = True
+        flagb = True
