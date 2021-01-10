@@ -52,6 +52,10 @@ class queries:
     view1 = """
     create view if not exists view1 as SELECT r.*, f.fac_short_name from sub_fac r, faculty f WHERE r.fac_id = f.fac_id;
     """
+
+    view2 = """
+        create view if not exists view2 as SELECT r.*, f.fac_short_name, s.sub_short_name from sub_fac r, faculty f, subjects s WHERE r.fac_id = f.fac_id and r.sub_id = s.sub_id ;
+    """
     def drop_table(self, table):
         cur.execute("drop table if exists ?", (table,))
 

@@ -1,9 +1,4 @@
-import sqlite3
-
-conn = sqlite3.connect("database/TimesOfTimeTable.db")
-cur = conn.cursor()
-
-def count(sub_type, sem):
+def count(sub_type, sem, cur):
     cur.execute("select count(sub_type) from subjects where sub_type = ? and sem = ?", (sub_type, sem,))
     return cur.fetchall()
 
@@ -11,14 +6,14 @@ def count(sub_type, sem):
 class calculate_hours:
     """total hours per subject"""
 
-    def __init__(self, sem):
+    def __init__(self, sem, cur):
         self.sem = sem
-        self.theory = count("theory", sem)[0][0]
-        self.not_theory = count("not_theory", sem)[0][0]
-        self.labs = count("lab", sem)[0][0]
-        self.minor_subs = count("minor", sem)[0][0]
-        self.major_subs = count("major", sem)[0][0]
-        self.spl = count("spl", sem)[0][0]
+        self.theory = count("theory", sem, cur)[0][0]
+        self.not_theory = count("not_theory", sem, cur)[0][0]
+        self.labs = count("lab", sem, cur)[0][0]
+        self.minor_subs = count("minor", sem, cur)[0][0]
+        self.major_subs = count("major", sem, cur)[0][0]
+        self.spl = count("spl", sem, cur)[0][0]
         self.total_hours_per_week = 39
 
     def calculate(self):
@@ -29,7 +24,7 @@ class calculate_hours:
         per_sub = int(hours)
         print("hours per sub", per_sub)
         extra = (hours - per_sub) * total_subs
-        print("remaining extra hours",extra)
+        print("remaining extra hours", extra)
         extra = round(extra)
         print(extra)
         per_major = per_sub
@@ -48,11 +43,3 @@ class calculate_hours:
         if (
                 per_major * self.major_subs + per_not_theory * self.not_theory + per_theory * self.theory + self.labs * 3 + self.minor_subs + self.spl * 2) <= 39:
             return per_major, per_not_theory, per_theory
-
-
-cal = calculate_hours(5)
-
-m, nt, t = cal.calculate()
-
-print(m, nt, t, )
-conn.close()
