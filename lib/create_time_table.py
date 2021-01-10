@@ -22,14 +22,16 @@ c_hours = dict()
 """ list of subjects """
 subs = list()
 
-""" """
+""" list of faculty, who are engaging classes now & who's 'class_engaged' will be decremented """
+decrement_it = list()
 
 
 def get_subs():
     """ refers table 'subjects' """
-    cur.execute("""SELECT sub_short_name FROM subjects WHERE SEM = 5;""")
-    for row in cur.fetchall():
-        subs.append(row[0])
+    cur.execute("""SELECT sub_short_name, sub_type FROM subjects WHERE SEM = 5;""")
+    for sname, stype in cur.fetchall():
+        d = {sname: stype}
+        subs.append(d)
 
 
 def init_fac():
@@ -79,6 +81,12 @@ def sub_rearrange(dic):
     return dic
 
 
+def decrement_hours():
+    """ funciton that will faculty engaging hours """
+    for s in decrement_it:
+        class_engaged[s] -= 1
+
+
 get_subs()
 init_fac()
 init_sub_hours()
@@ -86,12 +94,6 @@ init_sub_hours()
 a = list()
 b = list()
 c = list()
-
-
-# print("a hours", a_hours)
-
-
-# print("a facs", a_fac)
 
 class time_table:
     """ methods used to create time table """
@@ -113,58 +115,93 @@ class time_table:
         """"""
         shuffle(subs)
         i = 0
-        for sub in subs:
+
+        for sub_d in subs:  # subs is a list of dictionaries
             i += 1
+            for sub, type in sub_d.items():
+                if type in ['lab'] and a_hours[sub] > 0 and i in [0, 1, 4]:
+                    a.append(sub)
+                    a_hours[sub] -= 3
+                    class_engaged[a_fac[sub]] = 3
+                    decrement_it.append(a_fac[sub])
+                elif type in ['apti'] and a_hours[sub] > 0 and i in [0, 2, 4, 6]:
+                    a.append(sub)
+                    b.append(sub)
+                    c.append(sub)
+                    a_hours[sub] -= 2
+                    b_hours[sub] -= 2
+                    c_hours[sub] -= 2
+                else:
+                    a.append(sub)
+                    a_hours[sub] -= 1
+                    class_engaged[a_fac[sub]] = 1
+                    decrement_it.append(a_fac[sub])
 
-            if a_hours[subs] > 0:
-                a.append(sub)
-                a_hours[sub] -= 1
-                class_engaged[a_fac[sub]] = 1
-                print("appended to A sec")
-                print(sub)
+                """ for sec b """
+                if type in ['lab'] and b_hours[sub] > 0 and not class_engaged[b_fac[sub]] and i in [0, 1, 4]:  # for lab
+                    b.append(sub)
+                    b_hours[sub] -= 3
+                    class_engaged[a_fac[sub]] = 3
+                    decrement_it.append(b_fac[sub])
+                elif b_hours[sub] > 0 and not class_engaged[b_fac[sub]]:  # if faculty is not engaging any other class
+                    b.append(sub)
+                    b_hours[sub] -= 1
+                    class_engaged[a_fac[sub]] = 1
+                    decrement_it.append(b_fac[sub])
+                else:  # if faculty is engaging any other class
+                    """ check for next subject & check if the sub faculty is free ?  """
+                    k = i
+                    for j in range(len(subs) - i):
+                        for sub_d1 in subs:
+                            if not k < 0:
+                                k -= 1
+                                continue
+                            for sub1, type1 in sub_d1.items():
+                                if not class_engaged[b_fac[sub1]]:
+                                    b.append(sub1)
+                                    b_hours[sub1] -= 1
+                                    class_engaged[b_fac[sub1]] = 1
+                                    decrement_it.append(b_fac[sub1])
 
-            """ for sec b """
-            if b_hours[sub] > 0 and not class_engaged[b_fac[sub]]:
-                b.append(sub)
-                b_hours[sub] -= 1
-                class_engaged[a_fac[sub]] = 1
-                print("appended to B sec")
-            else:
-                """ shuffle subjects """
-                for j in range(len(subs) - i):
-                    if class_engaged[b_fac[subs[i + j]]]:
-                        continue
-                    else:
-                        b.append(subs[i + j])
-                        b_hours[subs[i + j]] -= 1
-                        print("appended to B sec after swapping")
+                """ for sec c """
+                if type in ['lab'] and c_hours[sub] > 0 and not class_engaged[c_fac[sub]] and i in [0, 1, 4]:  # for lab
+                    c.append(sub)
+                    c_hours[sub] -= 1
+                    class_engaged[c_fac[sub]] = 3
+                    decrement_it.append(c_fac[sub])
 
-            """ for sec c """
-            if c_hours[sub] > 0 and not class_engaged[c_fac[sub]]:
-                c.append(sub)
-                c_hours[sub] -= 1
-                print("appended to C sec")
-            else:
-                """ shuffle subjects """
-                for j in range(len(subs) - i):
-                    if class_engaged[c_fac[subs[i + j]]]:
-                        continue
-                    else:
-                        c.append(subs[i + j])
-                        c_hours[subs[i + j]] -= 1
-                        print("appended to C sec after swapping")
-            #print(class_engaged)
-            #class_engaged = dict.fromkeys(class_engaged, 0)
-            #print(class_engaged)
+                elif c_hours[sub] > 0 and not class_engaged[c_fac[sub]]:  # if faculty is not engaging any other class
+                    c.append(sub)
+                    c_hours[sub] -= 1
+                    class_engaged[c_fac[sub]] = 1
+                    decrement_it.append(c_fac[sub])
+
+                else:  # if faculty is engaging any other class
+                    """ check sub fac is free? """
+                    k = i
+                    for j in range(len(subs) - i):
+                        for sub_d1 in subs:
+                            if not k < 0:
+                                k -= 1
+                                continue
+                            for sub1, type1 in sub_d1.items():
+                                if not class_engaged[c_fac[sub1]]:
+                                    c.append(sub1)
+                                    c_hours[sub1] -= 1
+                                    class_engaged[c_fac[sub1]] = 1
+                                    decrement_it.append(c_fac[sub1])
+        decrement_hours()
+        """ subjects taken per day is not more than 7 """
+        if i == 7:
+            exit()
 
 
-
-time_table
-print(a)
-print(a_hours)
+# time_table
+print("sec A say Monday: ", a)
+print("remaining hours: ",a_hours)
 print()
-print(b)
-print(b_hours)
+print("sec B say Monday: ",b)
+print("remaining hours: ",b_hours)
 print()
-print(c)
-print(c_hours)
+print("sec C say Monday: ",c)
+print("remianing hours: ", c_hours)
