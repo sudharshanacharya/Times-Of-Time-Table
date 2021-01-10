@@ -24,11 +24,11 @@ class queries:
          );
          """
 
-    sub_fac_5th_sem = """
-         create table if not exists sub_fac_5th_sem(
-         fac_id int unique not null,
+    sub_fac = """
+         create table if not exists sub_fac(
+         fac_id int not null,
          sec varchar(3) not null,
-         sub_id int unique not null,
+         sub_id int not null,
          rem_hours int not null,
          constraint _fac_id foreign key(fac_id) references faculty(fac_id),
          constraint _sub_id foreign key(sub_id) references subjects(sub_id),
@@ -37,16 +37,20 @@ class queries:
          """
 
     get_a_fac = """
-        select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac_5th_sem where sec = 'A')    """
+        select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac where sec = 'A')    """
     get_b_fac = """
-    select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac_5th_sem where sec = 'B')
+    select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac where sec = 'B')
     """
     get_c_fac = """
-    select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac_5th_sem where sec = 'C')
+    select fac_short_name from Faculty where fac_id in (select fac_id from sub_fac where sec = 'C')
     """
 
     get_rem_hours = """
     select 
+    """
+
+    view1 = """
+    create view if not exists view1 as SELECT r.*, f.fac_short_name from sub_fac r, faculty f WHERE r.fac_id = f.fac_id;
     """
     def drop_table(self, table):
         cur.execute("drop table if exists ?", (table,))

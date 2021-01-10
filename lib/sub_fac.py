@@ -10,11 +10,11 @@ def edit_sub_fac(drop_table=False, create_table=False,):
     cur = conn.cursor()
 
     if drop_table:
-        cur.execute("drop table if exists sub_fac_5th_sem")
+        cur.execute("drop table if exists sub_fac")
         print("Table Dropped")
     if create_table:
-        cur.execute(queries.sub_fac_5th_sem)
-    cur.execute(queries.sub_fac_5th_sem)
+        cur.execute(queries.sub_fac)
+    cur.execute(queries.sub_fac)
 
     sec = input("Enter section(A , B  or C): ").upper()
 
@@ -62,35 +62,35 @@ def edit_sub_fac(drop_table=False, create_table=False,):
             print("major")
             print("extra_hour")
             cur.execute("""
-                        insert into sub_fac_5th_sem (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                        insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
                         """, (fac_id, sec, sub_id, per_major,))
         elif sub_type == ('not_theory',):
             print("not theory")
             print("extra_hour")
             cur.execute("""
-                            insert into sub_fac_5th_sem (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
                         """, (fac_id, sec, sub_id, per_nt,))
 
         elif sub_type == ('theory',):
             print("theory")
             print("extra_hour")
             cur.execute("""
-                            insert into sub_fac_5th_sem (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
                         """, (fac_id, sec, sub_id, per_t,))
 
         elif sub_type == ('lab',):
             cur.execute("""
-                            insert into sub_fac_5th_sem (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
                         """, (fac_id, sec, sub_id, 3,))
 
         elif sub_type == ('minor',):
             cur.execute("""
-                            insert into sub_fac_5th_sem (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
                         """, (fac_id, sec, sub_id, 1,))
 
         else :
             cur.execute("""
-                            insert into sub_fac_5th_sem (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
                         """, (fac_id, sec, sub_id, 2,))
 
         conn.commit()
