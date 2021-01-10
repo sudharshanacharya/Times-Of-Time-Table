@@ -9,6 +9,7 @@ cur = conn.cursor()
 a_fac = dict()
 b_fac = dict()
 c_fac = dict()
+
 class_engaged = dict()
 
 """ x_hours[sub] = remaining hours of sub """
@@ -28,33 +29,35 @@ def get_subs():
 
 
 def init_fac():
+    """ x_fac[sub] = sub faculty for class x """
+    """ initializes class_engaged[fac] to 0 """
     cur.execute(queries.view1)
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'A'")
     for row in cur.fetchall():
-        a_hours[row[0]] = row[1]
+        a_fac[row[0]] = row[1]
         class_engaged[row[1]] = 0
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'B'")
     for row in cur.fetchall():
-        b_hours[row[0]] = row[1]
+        b_fac[row[0]] = row[1]
         class_engaged[row[1]] = 0
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'C'")
     for row in cur.fetchall():
-        c_hours[row[0]] = row[1]
+        c_fac[row[0]] = row[1]
         class_engaged[row[1]] = 0
 
 
-def init_sub():
-    """ hello """
+def init_sub_hours():
+    """ x_hours[sub] = remaining hours of sub """
     cur.execute(queries.view1)
     cur.execute("SELECT SUB_SHORT_NAME, rem_hours from view2 WHERE sec = 'A'")
     for row in cur.fetchall():
-        a_fac[row[0]] = row[1]
+        a_hours[row[0]] = row[1]
     cur.execute("SELECT SUB_SHORT_NAME, rem_hours from view2 WHERE sec = 'B'")
     for row in cur.fetchall():
-        b_fac[row[0]] = row[1]
+        b_hours[row[0]] = row[1]
     cur.execute("SELECT SUB_SHORT_NAME, rem_hours from view2 WHERE sec = 'C'")
     for row in cur.fetchall():
-        c_fac[row[0]] = row[1]
+        c_hours[row[0]] = row[1]
 
 
 class time_table:
@@ -71,18 +74,3 @@ class time_table:
     """" shuffle a_fac, b_fab, c_fac after each day """
 
     """ note: steps may have changed """
-
-
-init_fac()
-init_sub()
-
-a_mon = list()
-b_mon = list()
-c_mon = list()
-
-for sub in subs:
-    a_mon.append(sub)
-
-print(a_mon)
-print(a_hours['atc'])
-print(class_engaged[a_fac['atc']])
