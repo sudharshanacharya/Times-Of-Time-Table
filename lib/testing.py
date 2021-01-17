@@ -11,6 +11,7 @@ cur = conn.cursor()
 a_fac = dict()
 b_fac = dict()
 c_fac = dict()
+fac = dict()
 
 class_engaged = dict()
 
@@ -18,7 +19,8 @@ class_engaged = dict()
 a_hours = dict()
 b_hours = dict()
 c_hours = dict()
-""" list of subjects """
+
+""" this sub-list keeps on changing based on update_subs(), get_all_subs(), get_one_sub() """
 subs = list()
 
 """ list of lab engaged """
@@ -39,25 +41,24 @@ if_lab.append('spl')
 decrement_it = list()
 
 
-def get_subs():
+def create_custom():
     """ creates custon table """
     """ refers table 'subjects' """
     cur.execute('drop table if exists  custom')
     cur.execute(""" create table if not exists custom (sname varchar (20), stype varchar(20), timing int );""")
-    cur.execute("""SELECT sub_short_name, sub_type FROM subjects WHERE SEM = 5;""")
+    cur.execute("""SELECT distinct sub_short_name, sub_type FROM subjects WHERE SEM = 5;""")
     for sname, stype in cur.fetchall():
         if stype in ['lab1', 'lab2', 'lab3']:
-            print(sname)
-            for duplicate in range(2):
+            for duplicate in range(1):
                 for i in [0, 1, 4]:
                     cur.execute('insert into custom (sname, stype, timing) values(?, ?, ?)', (sname, stype, i,))
         elif stype in ['spl']:
-            for duplicate in range(2):
+            for duplicate in range(1):
                 for i in [0, 2, 4]:
                     cur.execute('insert into custom (sname, stype, timing) values(?, ?, ?)', (sname, stype, i,))
         else:
-            for duplicate in range(2):
-                for i in range(7):
+            for duplicate in range(1):
+                for i in range(1):
                     cur.execute('insert into custom (sname, stype, timing) values(?, ?, -1)', (sname, stype,))
         conn.commit()
 
@@ -70,16 +71,19 @@ def init_fac():
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'A'")
     for row in cur.fetchall():
         a_fac[row[0]] = row[1]
+        fac[row[0]] = row[1]
         class_engaged[row[1]] = 0
 
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'B'")
     for row in cur.fetchall():
         b_fac[row[0]] = row[1]
+        fac[row[0]] = row[1]
         class_engaged[row[1]] = 0
 
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'C'")
     for row in cur.fetchall():
         c_fac[row[0]] = row[1]
+        fac[row[0]] = row[1]
         class_engaged[row[1]] = 0
 
 
@@ -98,7 +102,7 @@ def init_sub_hours():
         c_hours[row[0]] = row[1]
 
 
-def sub_rearrange(position, include_others=True, only_others=False):
+def update_subs(position, include_others=True, only_others=False):
     """ gets the data from the custom table returns shuffled list subs"""
     """ by default returns subs applicable for position """
     """ if 'include_others=False' :returns subs only applicable for perticular position """
@@ -117,20 +121,27 @@ def sub_rearrange(position, include_others=True, only_others=False):
         cur.execute('select sname, stype from custom where timing = ? or timing = ?', (position, -1,))
     else:
         cur.execute('select sname, stype from custom where timing = ?', (position,))
-
+    subs.clear()
     for sub2, type2 in cur.fetchall():
         d = (sub2, type2)
         subs.append(d)
-    return shuffle(subs)
+    return
+
+update_subs(0, include_others=False)
+print(subs)
+shuffle(subs)
+print(subs)
+update_subs(0, only_others=True)
+print(subs)
 
 
 def decrement_hours():
-    """ funciton that will faculty engaging hours """
+    """ function that will faculty engaging hours """
     for s in decrement_it:
-        class_engaged[s] -= 1
+        class_engaged[fac[s]] -= 1
 
 
-get_subs()
+create_custom()
 init_fac()
 init_sub_hours()
 
@@ -155,9 +166,9 @@ is_spl_done_for_week = False
 
 
 def get_one_sub(position, include_others=True, only_others=False, return_type=False):
-    subs = sub_rearrange(position, include_others=include_others, only_others=only_others)
+    update_subs(position, include_others=include_others, only_others=only_others)
     for sub2, type2 in subs:
-        if class_engaged[sub2]:
+        if class_engaged[fac[sub2]]:
             continue
         decrement_it.append(sub2)
         if return_type:
@@ -166,8 +177,8 @@ def get_one_sub(position, include_others=True, only_others=False, return_type=Fa
 
 
 def get_all_subs(position, include_others=True, only_others=False):
-    subs = sub_rearrange(position, include_others=include_others, only_others=only_others)
-    return subs
+    update_subs(position, include_others=include_others, only_others=only_others)
+    return
 
 
 def Spl(sub1, position):
@@ -222,20 +233,23 @@ def xyz(position, sub1, type1, sec):
                 sec.append(sub1)
                 position += 1
             list_engaging_labs[type1] += 1
+            decrement_it.append(sub1)
             return position, i
         else:
-            subs = get_all_subs(position, include_others=False)
+            get_all_subs(position, include_others=False)
             for sub1, type1 in subs:
                 if list_engaging_labs[type1] < 2:
                     for i in range(3):
                         sec.append(sub1)
                         position += 1
             list_engaging_labs[type1] += 1
+            decrement_it.append(sub1)
             return position, i
 
     else:
         sec.append(sub1)
         position += 1
+        decrement_it.append(sub1)
         return position, 1
 
 
@@ -246,53 +260,61 @@ class time_table:
         sem5.pos_b = 0
         sem5.pos_c = 0
         for i in range(7):
-            print("loop", i)
+            #print("loop", i)
 
             if isinstance(sem5.pos_a, int) and sem5.pos_a < 7:
-                subs = sub_rearrange(sem5.pos_a)[0]
-                print("subjects which are in the position ", sem5.pos_a, " are selected from the database ")
-                print('a position', sem5.pos_a)
-                for sub1, type1 in subs:
+                update_subs(sem5.pos_a)
+                #print('printing retuan value of update_subs', subs)
+                #print("subjects which are in the position ", sem5.pos_a, " are selected from the database ")
+                #print('a position', sem5.pos_a)
+
+                for sub in subs:
+                    sub1 = sub[0]
+                    type1 = sub[1]
                     if class_engaged[a_fac[sub1]]:
                         continue
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
-                        return_val = Spl(sem5.pos_a)
+                        return_val = Spl(sub1, sem5.pos_a)
                     else:
-                        pos, diff = xyz(sem5.pos_a, sub1, type1)
+                        pos, diff = xyz(sem5.pos_a, sub1, type1, a)
                         sem5.pos_a = sem5.pos_a + pos
                         class_engaged[a_fac[sub1]] += diff
                         a_hours[sub1] -= diff
 
             if isinstance(sem5.pos_b, int) and sem5.pos_b < 7:
-                subs = sub_rearrange(sem5.pos_b)[0]
+                update_subs(sem5.pos_b)
                 print("subjects which are in the position ", sem5.pos_b, " are selected from the database ")
                 print('b position', sem5.pos_b)
-                for sub1, type1 in subs:
+                for sub in subs:
+                    sub1 = sub[0]
+                    type1 = sub[1]
                     if class_engaged[b_fac[sub1]]:
                         continue
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
-                        return_val = Spl(sem5.pos_b)
+                        return_val = Spl(sub1, sem5.pos_b)
                     else:
-                        pos, diff = xyz(sem5.pos_a, sub1, type1)
+                        pos, diff = xyz(sem5.pos_a, sub1, type1, b)
                         sem5.pos_b = sem5.pos_b + pos
                         class_engaged[b_fac[sub1]] += diff
                         b_hours[sub1] -= diff
 
             if isinstance(sem5.pos_c, int) and sem5.pos_c < 7:
-                subs = sub_rearrange(sem5.pos_c)[0]
-                for sub1, type1 in subs:
+                update_subs(sem5.pos_c)
+                for sub in subs:
+                    sub1 = sub[0]
+                    type1 = sub[1]
                     if class_engaged[c_fac[sub1]]:
                         continue
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
-                        return_val = Spl(sem5.pos_c)
+                        return_val = Spl(sub1, sem5.pos_c)
                     else:
-                        pos, diff = xyz(sem5.pos_c, sub1, type1)
+                        pos, diff = xyz(sem5.pos_c, sub1, type1, c)
                         sem5.pos_c = sem5.pos_c + pos
                         class_engaged[c_fac[sub1]] += diff
                         c_hours[sub1] -= diff
