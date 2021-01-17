@@ -176,6 +176,7 @@ def get_all_subs(position, include_others=True, only_others=False):
 
 
 def Spl(sub1, position):
+    print("apti")
     """ return value zero represents any sub is not appended to any class"""
     """ return vale 1, spl subject is appended to all the class """
     if is_spl_done_for_week:
@@ -183,21 +184,21 @@ def Spl(sub1, position):
     highest = max(sem5.pos_a, sem5.pos_b, sem5.pos_c)
     print(highest)
     if highest in [0, 2, 4]:
-        for loop in (highest - sem5.pos_a):
+        for loop in range(highest - sem5.pos_a):
             if sem5.pos_a < highest:
                 sub2 = get_one_sub(position, only_others=True)
                 a.append(sub2)
                 class_engaged[a_fac[sub2]] += 1
                 a_hours[sub2] -= 1
                 sem5.pos_a += 1
-
+        for loop in range(highest-sem5.pos_b):
             if sem5.pos_b < highest:
                 sub2 = get_one_sub(position, only_others=True)
                 b.append(sub2)
                 class_engaged[b_fac[sub2]] += 1
                 b_hours[sub2] -= 1
                 sem5.pos_b += 1
-
+        for loop in range(highest - sem5.pos_c):
             if sem5.pos_c < highest:
                 sub2 = get_one_sub(position, only_others=True)
                 c.append(sub2)
@@ -233,7 +234,7 @@ def xyz(position, sub1, type1, sec):
         else:
             get_all_subs(position, include_others=False)
             for sub1, type1 in subs:
-                if list_engaging_labs[type1] < 2:
+                if type1 not in ['spl'] and list_engaging_labs[type1] < 2:
                     for i in range(3):
                         sec.append(sub1)
                         position += 1
@@ -255,13 +256,12 @@ class time_table:
         sem5.pos_b = 0
         sem5.pos_c = 0
         for i in range(7):
-            print(sem5.pos_a)
-            print(sem5.pos_b)
-            print(sem5.pos_c)
+
             if isinstance(sem5.pos_a, int) and sem5.pos_a < 7:
                 update_subs(sem5.pos_a)
                 shuffle(subs)
                 for sub in subs:
+                    print(sub)
                     sub1 = sub[0]
                     type1 = sub[1]
                     if class_engaged[a_fac[sub1]]:
@@ -269,11 +269,20 @@ class time_table:
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
+                        print("sec a")
+                        print(sem5.pos_a)
+                        print(sem5.pos_b)
+                        print(sem5.pos_c)
                         return_val = Spl(sub1, sem5.pos_a)
+                        print(sem5.pos_a)
+                        print(sem5.pos_b)
+                        print(sem5.pos_c)
+                        break
                     else:
                         sem5.pos_a, diff = xyz(sem5.pos_a, sub1, type1, a)
                         class_engaged[a_fac[sub1]] += diff
                         a_hours[sub1] -= diff
+                        break
 
             if isinstance(sem5.pos_b, int) and sem5.pos_b < 7:
                 update_subs(sem5.pos_b)
@@ -286,11 +295,20 @@ class time_table:
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
+                        print("sec b")
+                        print(sem5.pos_a)
+                        print(sem5.pos_b)
+                        print(sem5.pos_c)
                         return_val = Spl(sub1, sem5.pos_b)
+                        print(sem5.pos_a)
+                        print(sem5.pos_b)
+                        print(sem5.pos_c)
+                        break
                     else:
-                        sem5.pos_b, diff = xyz(sem5.pos_a, sub1, type1, b)
+                        sem5.pos_b, diff = xyz(sem5.pos_b, sub1, type1, b)
                         class_engaged[b_fac[sub1]] += diff
                         b_hours[sub1] -= diff
+                        break
 
             if isinstance(sem5.pos_c, int) and sem5.pos_c < 7:
                 update_subs(sem5.pos_c)
@@ -303,11 +321,21 @@ class time_table:
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
+                        print("sec c")
+                        print(sem5.pos_a)
+                        print(sem5.pos_b)
+                        print(sem5.pos_c)
                         return_val = Spl(sub1, sem5.pos_c)
+                        print("sec b")
+                        print(sem5.pos_a)
+                        print(sem5.pos_b)
+                        print(sem5.pos_c)
+                        break
                     else:
                         sem5.pos_c, diff = xyz(sem5.pos_c, sub1, type1, c)
                         class_engaged[c_fac[sub1]] += diff
                         c_hours[sub1] -= diff
+                        break
             decrement_hours()
             print()
             print()
