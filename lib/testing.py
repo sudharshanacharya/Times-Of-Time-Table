@@ -100,6 +100,9 @@ def init_sub_hours():
 
 def sub_rearrange(position, include_others=True, only_others=False):
     """ gets the data from the custom table returns shuffled list subs"""
+    """ by default returns subs applicable for position """
+    """ if 'include_others=False' :returns subs only applicable for perticular position """
+    """ if 'only_others=True' :returns subs expect the only applicable one  """
     # def func(e):
     #   return e[1]  # to sort by 2nd element
 
@@ -151,35 +154,46 @@ sem5 = positions_of_class()
 is_spl_done_for_week = False
 
 
-def get_one_sub(position):
-    subs = sub_rearrange(position, only_others=True)
+def get_one_sub(position, include_others=True, only_others=False, return_type=False):
+    subs = sub_rearrange(position, include_others=include_others, only_others=only_others)
     for sub2, type2 in subs:
         if class_engaged[sub2]:
             continue
         decrement_it.append(sub2)
+        if return_type:
+            return sub2, type2
         return sub2
 
 
+def get_all_subs(position, include_others=True, only_others=False):
+    subs = sub_rearrange(position, include_others=include_others, only_others=only_others)
+    return subs
+
+
 def Spl(sub1, position):
+    """ return value zero represents any sub is not appended to any class"""
+    """ return vale 1, spl subject is appended to all the class """
+    if is_spl_done_for_week:
+        return 0
     highest = max(sem5.pos_a, sem5.pos_b, sem5.pos_c)
     if highest in [0, 2, 4]:
         for loop in (highest - sem5.pos_a):
             if sem5.pos_a < highest:
-                sub2 = get_one_sub(position)
+                sub2 = get_one_sub(position, only_others=True)
                 a.append(sub2)
                 class_engaged[a_fac[sub2]] += 1
                 a_hours[sub2] -= 1
                 sem5.pos_a += 1
 
             if sem5.pos_b < highest:
-                sub2 = get_one_sub(position)
+                sub2 = get_one_sub(position, only_others=True)
                 b.append(sub2)
                 class_engaged[b_fac[sub2]] += 1
                 b_hours[sub2] -= 1
                 sem5.pos_b += 1
 
             if sem5.pos_c < highest:
-                sub2 = get_one_sub(position)
+                sub2 = get_one_sub(position, only_others=True)
                 c.append(sub2)
                 class_engaged[c_fac[sub2]] += 1
                 c_hours[sub2] -= 1
@@ -199,14 +213,30 @@ def Spl(sub1, position):
         return 0
     return 1
 
+
 def xyz(position, sub1, type1, sec):
+    i = 0
     if type1 in ['lab1', 'lab2', 'lab3']:
         if list_engaging_labs[type1] < 2:
             for i in range(3):
                 sec.append(sub1)
-                class_engaged[a_fac[sub1]] += 1
-                a_hours[sub1] -= 1
                 position += 1
+            list_engaging_labs[type1] += 1
+            return position, i
+        else:
+            subs = get_all_subs(position, include_others=False)
+            for sub1, type1 in subs:
+                if list_engaging_labs[type1] < 2:
+                    for i in range(3):
+                        sec.append(sub1)
+                        position += 1
+            list_engaging_labs[type1] += 1
+            return position, i
+
+    else:
+        sec.append(sub1)
+        position += 1
+        return position, 1
 
 
 class time_table:
@@ -219,28 +249,53 @@ class time_table:
             print("loop", i)
 
             if isinstance(sem5.pos_a, int) and sem5.pos_a < 7:
-                subs = sub_rearrange()
+                subs = sub_rearrange(sem5.pos_a)[0]
                 print("subjects which are in the position ", sem5.pos_a, " are selected from the database ")
                 print('a position', sem5.pos_a)
                 for sub1, type1 in subs:
                     if class_engaged[a_fac[sub1]]:
                         continue
                     if type1 in ['spl']:
+                        if is_spl_done_for_week:
+                            continue
                         return_val = Spl(sem5.pos_a)
                     else:
-                        sem5.pos_a = sem5.pos_a + xyz(sem5.pos_a, sub1, type1)
-
-                sem5.pos_a = sem5.pos_a + xyz(sem5.pos_a, sec='a')
-            print()
+                        pos, diff = xyz(sem5.pos_a, sub1, type1)
+                        sem5.pos_a = sem5.pos_a + pos
+                        class_engaged[a_fac[sub1]] += diff
+                        a_hours[sub1] -= diff
 
             if isinstance(sem5.pos_b, int) and sem5.pos_b < 7:
+                subs = sub_rearrange(sem5.pos_b)[0]
+                print("subjects which are in the position ", sem5.pos_b, " are selected from the database ")
                 print('b position', sem5.pos_b)
-                sem5.pos_b = sem5.pos_b + xyz(sem5.pos_b, sec='b')
-            print()
+                for sub1, type1 in subs:
+                    if class_engaged[b_fac[sub1]]:
+                        continue
+                    if type1 in ['spl']:
+                        if is_spl_done_for_week:
+                            continue
+                        return_val = Spl(sem5.pos_b)
+                    else:
+                        pos, diff = xyz(sem5.pos_a, sub1, type1)
+                        sem5.pos_b = sem5.pos_b + pos
+                        class_engaged[b_fac[sub1]] += diff
+                        b_hours[sub1] -= diff
 
             if isinstance(sem5.pos_c, int) and sem5.pos_c < 7:
-                print('c position', sem5.pos_c)
-                sem5.pos_c = sem5.pos_c + xyz(sem5.pos_c, sec='c')
+                subs = sub_rearrange(sem5.pos_c)[0]
+                for sub1, type1 in subs:
+                    if class_engaged[c_fac[sub1]]:
+                        continue
+                    if type1 in ['spl']:
+                        if is_spl_done_for_week:
+                            continue
+                        return_val = Spl(sem5.pos_c)
+                    else:
+                        pos, diff = xyz(sem5.pos_c, sub1, type1)
+                        sem5.pos_c = sem5.pos_c + pos
+                        class_engaged[c_fac[sub1]] += diff
+                        c_hours[sub1] -= diff
             decrement_hours()
             print()
             print()
