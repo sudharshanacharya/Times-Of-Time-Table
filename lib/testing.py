@@ -127,12 +127,6 @@ def update_subs(position, include_others=True, only_others=False):
         subs.append(d)
     return
 
-update_subs(0, include_others=False)
-print(subs)
-shuffle(subs)
-print(subs)
-update_subs(0, only_others=True)
-print(subs)
 
 
 def decrement_hours():
@@ -187,6 +181,7 @@ def Spl(sub1, position):
     if is_spl_done_for_week:
         return 0
     highest = max(sem5.pos_a, sem5.pos_b, sem5.pos_c)
+    print(highest)
     if highest in [0, 2, 4]:
         for loop in (highest - sem5.pos_a):
             if sem5.pos_a < highest:
@@ -260,14 +255,12 @@ class time_table:
         sem5.pos_b = 0
         sem5.pos_c = 0
         for i in range(7):
-            #print("loop", i)
-
+            print(sem5.pos_a)
+            print(sem5.pos_b)
+            print(sem5.pos_c)
             if isinstance(sem5.pos_a, int) and sem5.pos_a < 7:
                 update_subs(sem5.pos_a)
-                #print('printing retuan value of update_subs', subs)
-                #print("subjects which are in the position ", sem5.pos_a, " are selected from the database ")
-                #print('a position', sem5.pos_a)
-
+                shuffle(subs)
                 for sub in subs:
                     sub1 = sub[0]
                     type1 = sub[1]
@@ -278,15 +271,13 @@ class time_table:
                             continue
                         return_val = Spl(sub1, sem5.pos_a)
                     else:
-                        pos, diff = xyz(sem5.pos_a, sub1, type1, a)
-                        sem5.pos_a = sem5.pos_a + pos
+                        sem5.pos_a, diff = xyz(sem5.pos_a, sub1, type1, a)
                         class_engaged[a_fac[sub1]] += diff
                         a_hours[sub1] -= diff
 
             if isinstance(sem5.pos_b, int) and sem5.pos_b < 7:
                 update_subs(sem5.pos_b)
-                print("subjects which are in the position ", sem5.pos_b, " are selected from the database ")
-                print('b position', sem5.pos_b)
+                shuffle(subs)
                 for sub in subs:
                     sub1 = sub[0]
                     type1 = sub[1]
@@ -297,13 +288,13 @@ class time_table:
                             continue
                         return_val = Spl(sub1, sem5.pos_b)
                     else:
-                        pos, diff = xyz(sem5.pos_a, sub1, type1, b)
-                        sem5.pos_b = sem5.pos_b + pos
+                        sem5.pos_b, diff = xyz(sem5.pos_a, sub1, type1, b)
                         class_engaged[b_fac[sub1]] += diff
                         b_hours[sub1] -= diff
 
             if isinstance(sem5.pos_c, int) and sem5.pos_c < 7:
                 update_subs(sem5.pos_c)
+                shuffle(subs)
                 for sub in subs:
                     sub1 = sub[0]
                     type1 = sub[1]
@@ -314,8 +305,7 @@ class time_table:
                             continue
                         return_val = Spl(sub1, sem5.pos_c)
                     else:
-                        pos, diff = xyz(sem5.pos_c, sub1, type1, c)
-                        sem5.pos_c = sem5.pos_c + pos
+                        sem5.pos_c, diff = xyz(sem5.pos_c, sub1, type1, c)
                         class_engaged[c_fac[sub1]] += diff
                         c_hours[sub1] -= diff
             decrement_hours()
@@ -326,5 +316,3 @@ class time_table:
 print(a)
 print(b)
 print(c)
-print(class_engaged)
-print(list_engaging_labs)
