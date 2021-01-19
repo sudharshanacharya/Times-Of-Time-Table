@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block body %}
+  <h1>Login</h1>
+  {% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+  {% endif %}
+  <form action="{{url_for('get_sub_info')}}" method=post>
+    <dl>
+      <dt>subject name:
+      <dd><input type=text name=name >
+      <dt>subject short name:
+      <dd><input type=text name=sname>
+        <dt>subject code:
+        <dd><input type=text name=scode >
+        <dt>subject credit:
+        <dd><input type=text name=credit>
+        <dt>subject type:
+        <dd><input type=text name=stype>
+        <dt>sem:
+        <dd><input type=text name = sem>
+    </dl>
+    <p><input type=submit value=Enter>
+  </p>
+{% endblock %}

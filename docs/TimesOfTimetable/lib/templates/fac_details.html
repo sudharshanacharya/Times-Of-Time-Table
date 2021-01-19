@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% extends "layout.html" %}
+    <meta charset="UTF-8">
+    <title>Faculty details</title>
+    <style>
+            #leftbox {
+                float:left;
+                background:cornsilk;
+                width:25%;
+                height:280px;
+                margin: 10px;
+            }
+            #middlebox{
+                float:left;
+                background:cornsilk;
+                width:50%;
+                height:280px;
+                margin: 10px;
+            }
+            #rightbox{
+                float:right;
+                background:cornsilk;
+                width:25%;
+                height:280px;
+                margin: 10px;
+            }
+</style>
+</head>
+<body>
+  <h1>Faculty Details</h1>
+    <div id = "boxes">
+            <div id = "leftbox">
+            <table>
+                <thead>
+                    <td>Faculty name</td>
+                    <td>Short Name</td>
+                </thead>
+            {% for faculty in a_query  %}
+                <tr>
+                    <td>{{ faculty[0] }}</td>
+                    <td>{{ faculty[1] }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+            </div>
+
+            <div id = "middlebox">
+                <table>
+                <thead>
+                    <td>Faculty name</td>
+                    <td>Short Name</td>
+                </thead>
+            {% for faculty in b_query  %}
+                <tr>
+                    <td>{{ faculty[0] }}</td>
+                    <td>{{ faculty[1] }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+            </div>
+
+            <div id = "rightbox">
+                <table>
+                <thead>
+                    <td>Faculty name</td>
+                    <td>Short Name</td>
+                </thead>
+            {% for faculty in c_query  %}
+                <tr>
+                    <td>{{ faculty[0] }}</td>
+                    <td>{{ faculty[1] }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+            </div>
+    </div>
+</body>
+</html>

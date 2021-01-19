@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antivenom Centre Details</title>
+</head>
+
+<body style="box-sizing: border-box;
+    background-color: #fff5c0;
+    margin: 0;
+    padding: 0;">
+    <div style="
+        background-color: #ffb396;
+        padding: 1.2rem ;
+        margin: 0;
+        text-align: center;">
+        <h1 style="text-align: center; margin-top: 107px;">
+            Antivenom Centre Details</h1>
+    </div>
+
+
+    <div style="text-align: center; margin: 170px;">
+        <table width="100%" style="border: 1px solid black; text-align: center;border-collapse: collapse;">
+            <tr style="border: 1px solid black;">
+                <th width="(100/3)%" style="border: 1px solid black;">Facility_ID</th>
+                <th width="(100/3)%" style="border: 1px solid black;">Facility_Name</th>
+                <th width="(100/3)%" style="border: 1px solid black;">City</th>
+                <th width="(100/3)%" style="border: 1px solid black;">District</th>
+                <th width="(100/3)%" style="border: 1px solid black;">State</th>
+                <th width="(100/3)%" style="border: 1px solid black;">Contact_no</th>
+                <th width="(100/3)%" style="border: 1px solid black;">AV_Name</th>
+                <th width="(100/3)%" style="border: 1px solid black;">Available_Qty</th>
+                <th width="(100/3)%" style="border: 1px solid black;">AV_Price</th>
+                <th width="(100/3)%" style="border: 1px solid black;">Book an Appointment</th>
+
+
+            </tr>
+            {% for avc in av %}
+            <tr width="100%" style="border: 1px solid black;">
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[0]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[1]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[2]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[3]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[4]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[5]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[6]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[7]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">{{avc[8]}}</td>
+                <td width="(100/3)%" style="border: 1px solid black;">
+                <button type="submit " value="book " formaction="/appointment">Book Appointment</button></td>
+
+            </tr>{% endfor %}
+
+        </table>
+        </br>
+    </div>
+</body>
+
+</html>
