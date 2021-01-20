@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign</title>
+    <style>
+        #leftbox {
+            float:left;
+            background:cornsilk;
+            width:60%;
+            /*height:280px;*/
+            border: 1px solid black;
+            /*border-bottom-color: #3e8e41;*/
+            margin: 10px 10px;
+            padding: 15px;
+        }
+        .btn {
+            border: none;
+            background-color: inherit;
+            padding: 14px 28px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn:hover {background: #eee;}
+
+        .success {color: green;}
+        .info {color: dodgerblue;}
+        .warning {color: orange;}
+        .danger {color: red;}
+        .default {color: black;}
+
+        .dropbtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 16px;
+            font-size: 16px;
+            border: none;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 16px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {background-color: #ddd;}
+
+        .dropdown:hover .dropdown-content {display: block;}
+
+        .dropdown:hover .dropbtn {background-color: #3e8e41;}
+    </style>
+</head>
+<body>
+<h1>Assign subjects</h1>
+<div id="boxes">
+    <div id="leftbox">
+        <table>
+            <thead>
+            <td>Faculty</td>
+            <td>Subject</td>
+            <td>Seciton</td>
+            </thead>
+            <tr>
+                <form action="{{url_for('get_assign_info')}}" method=post>
+            <tr>
+                <td><input type="text" name="fname"></td>
+                <td><input type="text" name="sname"></td>
+                <td><input type="text" name="section"></td>
+                <td>
+                    <button class="btn success" type="submit">+</button>
+                </td>
+            </tr>
+
+            </form>
+            </tr>
+            {% for tuple in query %}
+            <tr>
+                <td>{{ tuple[0] }}</td>
+                <td>{{ tuple[1] }}</td>
+                <td>{{ tuple[2] }}</td>
+                <td>
+                    <form action="{{url_for('del_assign_info')}}" method=post>
+                        <button class="btn danger" type="submit" name="delete" value={{tuple[1]}}>-</button>
+                    </form>
+                    <br>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+</body>
+</html>

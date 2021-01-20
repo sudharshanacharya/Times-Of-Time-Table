@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subject Details</title>
+    <style>
+        #leftbox {
+            float:left;
+            background:cornsilk;
+            width:100%;
+            /*height:280px;*/
+            border: 1px solid black;
+            /*border-bottom-color: #3e8e41;*/
+            margin: 10px 10px;
+        }
+        .btn {
+            border: none;
+            background-color: inherit;
+            padding: 14px 28px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn:hover {background: #eee;}
+
+        .success {color: green;}
+        .info {color: dodgerblue;}
+        .warning {color: orange;}
+        .danger {color: red;}
+        .default {color: black;}
+    </style>
+</head>
+<body>
+<h1>Subject Details</h1>
+<div>
+    <div id="leftbox">
+        <table>
+            <thead>
+            <td>Subject name</td>
+            <td>short name</td>
+            <td>Subject Code</td>
+            <td>Subject Credit</td>
+            <td>Subject Type</td>
+            <td>Sem</td>
+
+            </thead>
+            <form action="{{url_for('get_sub_info')}}" method=post>
+                <tr>
+                <td><input type="text" name="sname"></td>
+                <td><input type="text" name="ssname"></td>
+                <td><input type="text" name="scode"></td>
+                <td><input type="text" name="scredit"></td>
+                <td><input type="text" name="stype"></td>
+                <td><input type="text" name="sem"></td>
+                    <td>
+                        <button class="btn success" type="submit">+</button>
+                    </td>
+                </tr>
+            </form>
+            {% for sub in query %}
+            <tr>
+                <td>{{ sub[0] }}</td>
+                <td>{{ sub[1] }}</td>
+                <td>{{ sub[2] }}</td>
+                <td>{{ sub[3] }}</td>
+                <td>{{ sub[4] }}</td>
+                <td>{{ sub[5] }}</td>
+                <td>
+                    <form action="{{url_for('del_sub_info')}}" method=post>
+                        <button class="btn danger" type="submit" name="delete" value={{sub[1]}}>-</button>
+                    </form>
+                <br>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+</body>
+</html>
