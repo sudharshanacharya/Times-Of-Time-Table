@@ -14,6 +14,17 @@
             margin: 10px 10px;
             padding: 15px;
         }
+        #middlebox{
+            float:left;
+            top: 50%;
+            left: 50%;
+            /*background:cornsilk;*/
+            /*width:25%;*/
+            /*height:280px;*/
+            border: 1px solid black;
+            /*border-bottom-color: #3e8e41;*/
+            margin: 10px 10px;
+        }
         .btn {
             border: none;
             background-color: inherit;
@@ -76,9 +87,10 @@
             <td>Faculty</td>
             <td>Subject</td>
             <td>Seciton</td>
+            <td>Hours Allotted</td>
             </thead>
             <tr>
-                <form action="{{url_for('get_assign_info')}}" method=post>
+                <form style="float: right" action="{{url_for('get_assign_info')}}" method=post>
             <tr>
                 <td><input type="text" name="fname"></td>
                 <td><input type="text" name="sname"></td>
@@ -95,6 +107,7 @@
                 <td>{{ tuple[0] }}</td>
                 <td>{{ tuple[1] }}</td>
                 <td>{{ tuple[2] }}</td>
+                <td>{{ tuple[3] }}</td>
                 <td>
                     <form action="{{url_for('del_assign_info')}}" method=post>
                         <button class="btn danger" type="submit" name="delete" value={{tuple[1]}}>-</button>
@@ -104,6 +117,13 @@
             {% endfor %}
         </table>
     </div>
+    <form action="{{url_for('get_assign_info')}}" method=post>
+        <div id="middlebox">
+            <button class="btn success" type="submit" name="sec" value="A"><strong>A</strong></button><br>
+            <button class="btn success" type="submit" name="sec" value="B"><strong>B</strong></button><br>
+            <button class="btn success" type="submit" name="sec" value="C"><strong>c</strong></button><br>
+        </div>
+    </form>
 </div>
 </body>
 </html>
