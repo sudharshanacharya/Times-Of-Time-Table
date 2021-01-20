@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TimesOfTimeTable</title>
-</head>
-<body>
-<h1>hello vishwajith! </h1>>
-</body>
-</html>
+{% extends "layout.html" %}
+{% block body %}
+  <h1>Overview</h1>
+  <p>Do you want to <a href="{{ url_for('sub_input') }}">log in?</a>
+<p> view faculty? <a href="{{ url_for('fac_detail')}}"> here </a>
+{% endblock %}
