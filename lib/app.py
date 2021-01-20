@@ -41,66 +41,14 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 def index():
     return render_template('index.html')
 
-
-# def sub_input(sub_name, sub_short_name, sub_code, sub_credit, sub_type, sem, drop_table=False,
-#               create_table=False):
-#     with sqlite3.connect(DATABASE) as con:
-#         cur = con.cursor()
-#         cur.execute("""
-#             insert into subjects (sub_short_name,sub_name, sub_code, sub_credit, sub_type, sem)
-#             values(?,?,?,?,?)
-#             """, (sub_short_name, sub_name, sub_code, sub_credit, sub_type, sem,))
-#         con.commit()
-#     msg = 'record successfully added'
-#     return msg
-
-# cur = get_db().cursor()
-# if drop_table:
-#     cur.execute("drop table if exists subjects")
-# if create_table:
-#     cur.execute(queries.create_table_subjects)
-# cur.execute("""
-# insert into subjects (sub_short_name,sub_name, sub_code, sub_credit, sub_type, sem)
-# values(?,?,?,?,?)
-# """, (sub_short_name, sub_name, sub_code, sub_credit, sub_type, sem,))
-
-
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     error = None
-#     if request.method == 'POST':
-#         if request.form['username'] != 'admin' or \
-#                 request.form['password'] != 'secret':
-#             error = 'Invalid credentials'
-#             flash('You were successfully logged in')
-#         else:
-#             flash('You were successfully logged in')
-#             return redirect(url_for('index'))
-#     return render_template('login.html', error=error)
+@app.route('/superuser')
+def superuser():
+    return render_template('intermediate.html')
 
 
 @app.route('/sub_input')
 def sub_input():
     return render_template('sub_input.html')
-
-
-# @app.route('/get_sub_info', methods=['POST', 'GET'])
-# def get_sub_info():
-#     name = request.form.get('name')
-#     sname = request.form.get('sname')
-#     scode = request.form.get('scode')
-#     credit = request.form.get('credit')
-#     stype = request.form.get('stype')
-#     sem = request.form.get('sem')
-#     with sqlite3.connect(DATABASE) as con:
-#         cur = con.cursor()
-#         cur.execute("""
-#                 insert into subjects (sub_name,sub_short_name, sub_code, sub_credit, sub_type, sem)
-#                 values(?,?,?,?,?,?)
-#                 """, (name, sname, scode, credit, stype, sem,))
-#         con.commit()
-
-#     return render_template('result.html')
 
 
 @app.route('/fac_detail')
@@ -188,106 +136,131 @@ def del_sub_info():
         a_query = cur.fetchall()
         return render_template('edit_sub.html', query=a_query)
 
+sec = 'A'
 
 @app.route('/assign')
 def assign():
     with sqlite3.connect(DATABASE) as con:
+        sec = 'A'
         cur = con.cursor()
         cur.execute("""
-        SELECT fac_short_name, sub_short_name, sec FROM faculty f, subjects s,sub_fac r
-            WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec='A';
-        """)
+        SELECT fac_short_name, sub_short_name, sec, rem_hours "Hours alloted" FROM faculty f, subjects s,sub_fac r
+        WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=?;
+        """,(sec,))
         tups = cur.fetchall()
-        print(tups)
         return render_template('assign.html', query=tups)
 
-@app.route('/get_assign_info')
+
+@app.route('/get_assign_info', methods=['POST', 'GET'])
 def get_assign_info():
     with sqlite3.connect(DATABASE) as con:
         cur = con.cursor()
         cal = calculate_hours(5, cur)  # raise API not done
         per_major, per_nt, per_t = cal.calculate()
-        try:
-            fac_name = request.form.get('fname')
-            cur.execute("select fac_id from faculty where lower(fac_short_name) = lower (?)", (fac_name,))
-            fac_id = cur.fetchone()[0]
-            print(fac_id)
-        except TypeError:
-            print("object is of NoneType 'fac_id = cur.fetchone()[0]' not subscriptable ")
-        finally:
-            print("Other Error")
-
-        """ subject_name & get subject_id to enter into sub_fac table """
-        try:
-            sub_name = request.form.get('sname')
-            cur.execute("select sub_id from subjects where lower(sub_short_name) = lower (?)", (sub_name,))
-            sub_id = cur.fetchone()[0]
-            print(sub_id)
-        except TypeError:
-            print("object is of NoneType 'sub_id = cur.fetchone()[0]' not subscribable ")
-        finally:
-            print("Other Error")
-        try:
-            cur.execute("select sub_type from subjects where sub_id = ?", (sub_id,))
-        except NameError:
-            print("sub_id is not defined")
-        finally:
-            print("Other Error")
-
-        sub_type = cur.fetchone()
-        sec = request.form.get('sec')
-        if sub_type == ('major',):
+        fac_name = request.form.get('fname')
+        if fac_name is not None:
             try:
-                cur.execute("""
-                        insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                        """, (fac_id, sec, sub_id, per_major,))
-            except:
-                print("subject already exists")
 
-        elif sub_type == ('not_theory',):
-            print("not theory")
-            print("extra_hour")
+                cur.execute("select fac_id from faculty where lower(fac_short_name) = lower (?)", (fac_name,))
+                fac_id = cur.fetchone()[0]
+                print("fac_id ",fac_id)
+            except TypeError:
+                print("object is of NoneType 'fac_id = cur.fetchone()[0]' not subscriptable ")
+            except:
+                print("Other Error")
+
+            """ subject_name & get subject_id to enter into sub_fac table """
             try:
-                cur.execute("""
-                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                        """, (fac_id, sec, sub_id, per_nt,))
+                sub_name = request.form.get('sname')
+                cur.execute("select sub_id from subjects where lower(sub_short_name) = lower (?)", (sub_name,))
+                sub_id = cur.fetchone()[0]
+                print("sub_id", sub_id)
+            except TypeError:
+                print("object is of NoneType 'sub_id = cur.fetchone()[0]' not subscribable ")
             except:
-                print("subject already exists")
-
-        elif sub_type == ('theory',):
-            print("theory")
-            print("extra_hour")
+                print("Other Error")
             try:
-                cur.execute("""
-                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                        """, (fac_id, sec, sub_id, per_t,))
+                cur.execute("select sub_type from subjects where sub_id = ?", (sub_id,))
+            except NameError:
+                print("sub_id is not defined")
             except:
-                print("subject already exists")
+                print("Other Error")
 
-        elif sub_type == ('lab',):
-            try:
+            sub_type = cur.fetchone()
+            print("subject type", sub_type)
+            sec = request.form.get('section')
+            if sub_type == ('major',):
+                try:
+                    cur.execute("""
+                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            """, (fac_id, sec.upper(), sub_id, per_major,))
+                except:
+                    print("subject already exists")
+
+            elif sub_type == ('not_theory',):
+                print("not theory")
+                print("extra_hour")
+                try:
+                    cur.execute("""
+                                insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            """, (fac_id, sec.upper(), sub_id, per_nt,))
+                except:
+                    print("subject already exists")
+
+            elif sub_type == ('theory',):
+                print("theory")
+                print("extra_hour")
+                try:
+                    cur.execute("""
+                                insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            """, (fac_id, sec.upper(), sub_id, per_t,))
+                except:
+                    print("subject already exists")
+
+            elif sub_type == ('lab',):
+                try:
+                    cur.execute("""
+                                insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            """, (fac_id, sec.upper(), sub_id, 3,))
+                except:
+                    print("subject already exists")
+
+            elif sub_type == ('minor',):
                 cur.execute("""
-                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                        """, (fac_id, sec, sub_id, 3,))
-            except:
-                print("subject already exists")
-
-        elif sub_type == ('minor',):
-            cur.execute("""
-                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                        """, (fac_id, sec, sub_id, 1,))
+                                insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            """, (fac_id, sec.upper(), sub_id, 1,))
 
 
-        else:
-            try:
-                cur.execute("""
-                            insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                        """, (fac_id, sec, sub_id, 2,))
-            except:
-                print("subject already exists")
+            else:
+                try:
+                    cur.execute("""
+                                insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
+                            """, (fac_id, sec.upper(), sub_id, 2,))
+                except:
+                    print("subject already exists")
+        con.commit()
+        if sec is None or sec.upper() not in ['A', 'B', 'C']:
+            sec = request.form.get('sec')
+        cur.execute("""
+                SELECT fac_short_name, sub_short_name, sec, rem_hours "Hours alloted" FROM faculty f, subjects s,sub_fac r
+                WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=?;
+                """,(sec.upper(),))
+        tups = cur.fetchall()
+        return render_template('assign.html', query=tups)
 
-    return render_template('assign.html')
-
-@app.route('/del_assign_info')
+@app.route('/del_assign_info', methods=['POST', 'GET'])
 def del_assign_info():
-    return render_template('assign.html')
+    with sqlite3.connect(DATABASE) as con:
+        cur = con.cursor()
+        ssname = request.form.get('delete')
+        cur.execute("""
+        delete from sub_fac where sub_id is (select sub_id from subjects where sub_short_name =?)
+        """,(ssname,))
+        con.commit()
+        cur.execute("""
+                        SELECT fac_short_name, sub_short_name, sec, rem_hours "Hours alloted" FROM faculty f, subjects s,sub_fac r
+                        WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=?;
+                        """, (sec.upper(),))
+        tups = cur.fetchall()
+        return render_template('assign.html', query=tups)
+
