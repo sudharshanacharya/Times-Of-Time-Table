@@ -3,7 +3,6 @@ from lib.hours_per_sub import calculate_hours
 from flask import Flask, flash, redirect, render_template, \
     request, url_for, g
 
-
 DATABASE = 'database/TimesOfTimeTable.db'
 
 app = Flask(__name__)
@@ -40,6 +39,7 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/superuser')
 def superuser():
@@ -97,7 +97,7 @@ def sub_details():
     with sqlite3.connect(DATABASE) as con:
         print("connected")
         cur = con.cursor()
-        cur.execute("select sub_name, sub_short_name, sub_code, sub_credit, sub_type, sem from subjects")
+        cur.execute("select sub_name, sub_short_name, sub_code, sub_credit, sub_type, sem from subjects order by sub_code")
         a_query = cur.fetchall()
         return render_template('edit_sub.html', query=a_query)
 
@@ -105,7 +105,7 @@ def sub_details():
 @app.route('/get_sub_info', methods=['POST', 'GET'])
 def get_sub_info():
     sname = request.form.get('sname')
-    ssname = request.form.get('sname')
+    ssname = request.form.get('ssname')
     scode = request.form.get('scode')
     scredit = request.form.get('scredit')
     stype = request.form.get('stype')
@@ -119,7 +119,7 @@ def get_sub_info():
             INSERT into subjects (sub_NAME, sub_SHORT_NAME, sub_code, sub_credit, sub_type, sem) VALUES(?,?, ?,?,?,?)
             """, (sname, ssname, scode, scredit, stype, sem,))
         con.commit()
-        cur.execute("select sub_name, sub_short_name, sub_code, sub_credit, sub_type, sem from subjects")
+        cur.execute("select sub_name, sub_short_name, sub_code, sub_credit, sub_type, sem from subjects order by sub_code")
 
         return render_template('edit_sub.html', query=cur.fetchall())
 
@@ -130,23 +130,27 @@ def del_sub_info():
     print(sname)
     with sqlite3.connect(DATABASE) as con:
         cur = con.cursor()
-        cur.execute("DELETE from subjects where SUB_SHORT_NAME=(?)", (sname,))
+        cur.execute("DELETE from subjects where SUB_SHORT_NAME=?", (sname,))
         con.commit()
-        cur.execute("select sub_name, sub_short_name, sub_code, sub_credit, sub_type, sem from subjects")
+        cur.execute("select sub_name, sub_short_name, sub_code, sub_credit, sub_type, sem from subjects order by sub_code")
         a_query = cur.fetchall()
         return render_template('edit_sub.html', query=a_query)
 
-sec = 'A'
+
+class sec:
+    def __init__(self):
+        self.sec = 'a'
+
+s = sec()
 
 @app.route('/assign')
 def assign():
     with sqlite3.connect(DATABASE) as con:
-        sec = 'A'
         cur = con.cursor()
         cur.execute("""
         SELECT fac_short_name, sub_short_name, sec, rem_hours "Hours alloted" FROM faculty f, subjects s,sub_fac r
-        WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=?;
-        """,(sec,))
+        WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=? order by fac_short_name
+        """, (s.sec.upper(),))
         tups = cur.fetchall()
         return render_template('assign.html', query=tups)
 
@@ -157,13 +161,15 @@ def get_assign_info():
         cur = con.cursor()
         cal = calculate_hours(5, cur)  # raise API not done
         per_major, per_nt, per_t = cal.calculate()
+        print(per_t, per_nt, per_major)
         fac_name = request.form.get('fname')
         if fac_name is not None:
+            print("fac_name is not None")
             try:
 
                 cur.execute("select fac_id from faculty where lower(fac_short_name) = lower (?)", (fac_name,))
                 fac_id = cur.fetchone()[0]
-                print("fac_id ",fac_id)
+                print("fac_id ", fac_id)
             except TypeError:
                 print("object is of NoneType 'fac_id = cur.fetchone()[0]' not subscriptable ")
             except:
@@ -188,14 +194,14 @@ def get_assign_info():
 
             sub_type = cur.fetchone()
             print("subject type", sub_type)
-            sec = request.form.get('section')
+            s.sec = request.form.get('section')
             if sub_type == ('major',):
                 try:
                     cur.execute("""
                             insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                            """, (fac_id, sec.upper(), sub_id, per_major,))
+                            """, (fac_id, s.sec.upper(), sub_id, per_major,))
                 except:
-                    print("subject already exists")
+                    print("error inserting major subject, subject already present in database")
 
             elif sub_type == ('not_theory',):
                 print("not theory")
@@ -203,9 +209,9 @@ def get_assign_info():
                 try:
                     cur.execute("""
                                 insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                            """, (fac_id, sec.upper(), sub_id, per_nt,))
+                            """, (fac_id, s.sec.upper(), sub_id, per_nt,))
                 except:
-                    print("subject already exists")
+                    print("error inserting not_theory subject, subject already present in database")
 
             elif sub_type == ('theory',):
                 print("theory")
@@ -213,38 +219,41 @@ def get_assign_info():
                 try:
                     cur.execute("""
                                 insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                            """, (fac_id, sec.upper(), sub_id, per_t,))
+                            """, (fac_id, s.sec.upper(), sub_id, per_t,))
                 except:
-                    print("subject already exists")
+                    print("error inserting theory subject, subject already present in database")
 
-            elif sub_type == ('lab',):
+            elif sub_type in [('lab1',), ('lab2',),('lab3',)] :
                 try:
                     cur.execute("""
                                 insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                            """, (fac_id, sec.upper(), sub_id, 3,))
+                            """, (fac_id, s.sec.upper(), sub_id, 3,))
                 except:
-                    print("subject already exists")
+                    print("error inserting lab subject, subject already present in database")
 
             elif sub_type == ('minor',):
                 cur.execute("""
                                 insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                            """, (fac_id, sec.upper(), sub_id, 1,))
+                            """, (fac_id, s.sec.upper(), sub_id, 1,))
 
 
             else:
                 try:
                     cur.execute("""
                                 insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
-                            """, (fac_id, sec.upper(), sub_id, 2,))
+                            """, (fac_id, s.sec.upper(), sub_id, 2,))
                 except:
-                    print("subject already exists")
+                    print("error inserting spl subject, subject already present in database")
         con.commit()
-        if sec is None or sec.upper() not in ['A', 'B', 'C']:
-            sec = request.form.get('sec')
+        # print("2", sec)
+        # if sec is None or sec not in ['A', 'B', 'C']:
+        #     print("3",sec)
+        s.sec = request.form.get('section')
+            # print("4",sec)
         cur.execute("""
                 SELECT fac_short_name, sub_short_name, sec, rem_hours "Hours alloted" FROM faculty f, subjects s,sub_fac r
-                WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=?;
-                """,(sec.upper(),))
+                WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=? order by fac_short_name 
+                """, (s.sec.upper(),))
         tups = cur.fetchall()
         return render_template('assign.html', query=tups)
 
@@ -255,12 +264,11 @@ def del_assign_info():
         ssname = request.form.get('delete')
         cur.execute("""
         delete from sub_fac where sub_id is (select sub_id from subjects where sub_short_name =?)
-        """,(ssname,))
+        """, (ssname,))
         con.commit()
         cur.execute("""
                         SELECT fac_short_name, sub_short_name, sec, rem_hours "Hours alloted" FROM faculty f, subjects s,sub_fac r
-                        WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=?;
-                        """, (sec.upper(),))
+                        WHERE r.fac_id = f.fac_id AND r.sub_id=s.sub_id AND sec=? order by fac_short_name
+                        """, (s.sec.upper(),))
         tups = cur.fetchall()
         return render_template('assign.html', query=tups)
-
