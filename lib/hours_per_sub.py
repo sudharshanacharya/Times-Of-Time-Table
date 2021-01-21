@@ -1,6 +1,10 @@
 def count(sub_type, sem, cur):
-    cur.execute("select count(sub_type) from subjects where sub_type = ? and sem = ?", (sub_type, sem,))
-    return cur.fetchall()
+    if sub_type == 'lab':
+        cur.execute("select count(sub_type) from subjects where sem = ? and  sub_type in ('lab1', 'lab2', 'lab3')", (sem,))
+        return cur.fetchall()
+    else:
+        cur.execute("select count(sub_type) from subjects where sem = ? and  sub_type is ?", (sem, sub_type,))
+        return cur.fetchall()
 
 
 class calculate_hours:
@@ -17,6 +21,14 @@ class calculate_hours:
         self.total_hours_per_week = 39
 
     def calculate(self):
+        print("no of major", self.major_subs)
+        print("no of theory", self.theory)
+        print("no of nt theory", self.not_theory)
+        print("labs", self.labs)
+        print("spl", self.spl)
+        print("minor", self.minor_subs)
+        no_labs = self.labs
+        print("no of labs", no_labs)
         total_subs = self.major_subs + self.not_theory + self.theory
         print("total_subs", total_subs)
         hours = (self.total_hours_per_week - (self.labs * 3 + self.minor_subs + self.spl * 2)) / total_subs
@@ -43,3 +55,11 @@ class calculate_hours:
         if (
                 per_major * self.major_subs + per_not_theory * self.not_theory + per_theory * self.theory + self.labs * 3 + self.minor_subs + self.spl * 2) <= 39:
             return per_major, per_not_theory, per_theory
+# import sqlite3
+# with sqlite3.connect('database/TimesOfTimeTable.db') as con:
+#     cur = con.cursor()
+#     print(count('lab', 5, cur))
+#     cal = calculate_hours(5, cur)  # raise API not done
+#     per_major, per_nt, per_t = cal.calculate()
+#     print(per_t, per_nt, per_major)
+#     print(count('lab', 5, cur))
