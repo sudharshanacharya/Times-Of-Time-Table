@@ -12,7 +12,7 @@ a_fac = dict()
 b_fac = dict()
 c_fac = dict()
 fac = dict()
-
+fac_list = list()
 class_engaged = dict()
 
 """ x_hours[sub] = remaining hours of sub """
@@ -72,18 +72,21 @@ def init_fac():
     for row in cur.fetchall():
         a_fac[row[0]] = row[1]
         fac[row[0]] = row[1]
+        fac_list.append(row[1])
         class_engaged[row[1]] = 0
 
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'B'")
     for row in cur.fetchall():
         b_fac[row[0]] = row[1]
         fac[row[0]] = row[1]
+        fac_list.append(row[1])
         class_engaged[row[1]] = 0
 
     cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'C'")
     for row in cur.fetchall():
         c_fac[row[0]] = row[1]
         fac[row[0]] = row[1]
+        fac_list.append(row[1])
         class_engaged[row[1]] = 0
 
 
@@ -128,11 +131,37 @@ def update_subs(position, include_others=True, only_others=False):
     return
 
 
-
 def decrement_hours():
-    """ function that will faculty engaging hours """
-    for s in decrement_it:
-        class_engaged[fac[s]] -= 1
+    """ function that will decrement faculty engaging hours """
+    # for di in class_engaged:
+    #     if di[]
+    for f in fac_list:
+        print(f)
+        if class_engaged[f] <= 0:
+            pass
+        else:
+            class_engaged[f] -= 1
+    # for f in decrement_it:
+    #     print('faculty selected is ',f)
+        # print('subject selected is',f)
+        # print(class_engaged[fac[f]])
+        # class_engaged[f] -= 1
+        # print('decremented value by 1')
+        # if class_engaged[fac[s]] > 0:
+        #     print("decrement_hours")
+        #     class_engaged[fac[s]] -= 1
+        # else:
+        #     print("passed")
+        #     pass
+def add_fac_to_decrement_it(_class_var, sub1, loop=1):
+    """ adding faculty who are engaging class to decrement list"""
+    for i in range(loop):
+        if _class_var == 'a':
+            decrement_it.append(a_fac[sub1])
+        if _class_var == 'b':
+            decrement_it.append(b_fac[sub1])
+        if _class_var == 'c':
+            decrement_it.append(c_fac[sub1])
 
 
 create_custom()
@@ -157,6 +186,9 @@ class positions_of_class():
 
 sem5 = positions_of_class()
 is_spl_done_for_week = False
+""" dictionary of list  """
+labs_done = dict()
+labs_done = {'a':[], 'b':[], 'c':[]}
 
 
 def get_one_sub(position, include_others=True, only_others=False, return_type=False):
@@ -164,7 +196,6 @@ def get_one_sub(position, include_others=True, only_others=False, return_type=Fa
     for sub2, type2 in subs:
         if class_engaged[fac[sub2]]:
             continue
-        decrement_it.append(sub2)
         if return_type:
             return sub2, type2
         return sub2
@@ -182,19 +213,20 @@ def Spl(sub1, position):
     if is_spl_done_for_week:
         return 0
     highest = max(sem5.pos_a, sem5.pos_b, sem5.pos_c)
-    print(highest)
     if highest in [0, 2, 4]:
         for loop in range(highest - sem5.pos_a):
             if sem5.pos_a < highest:
                 sub2 = get_one_sub(position, only_others=True)
                 a.append(sub2)
+                print(sub2)
                 class_engaged[a_fac[sub2]] += 1
                 a_hours[sub2] -= 1
                 sem5.pos_a += 1
-        for loop in range(highest-sem5.pos_b):
+        for loop in range(highest - sem5.pos_b):
             if sem5.pos_b < highest:
                 sub2 = get_one_sub(position, only_others=True)
                 b.append(sub2)
+                print(sub2)
                 class_engaged[b_fac[sub2]] += 1
                 b_hours[sub2] -= 1
                 sem5.pos_b += 1
@@ -202,6 +234,7 @@ def Spl(sub1, position):
             if sem5.pos_c < highest:
                 sub2 = get_one_sub(position, only_others=True)
                 c.append(sub2)
+                print(sub2)
                 class_engaged[c_fac[sub2]] += 1
                 c_hours[sub2] -= 1
                 sem5.pos_c += 1
@@ -218,70 +251,98 @@ def Spl(sub1, position):
             b_hours[sub1] -= 1
             c_hours[sub1] -= 1
         return 0
-    return 1
+    return -1
 
 
-def xyz(position, sub1, type1, sec):
-    i = 0
+
+def xyz(position, sub1, type1, sec, _class_var):
+    diff = 0
+    for lb in labs_done.get(_class_var):
+        if sub1 in lb:
+            return position, diff
+        else:
+            pass
     if type1 in ['lab1', 'lab2', 'lab3']:
         if list_engaging_labs[type1] < 2:
-            for i in range(3):
-                sec.append(sub1)
-                position += 1
-            list_engaging_labs[type1] += 1
-            decrement_it.append(sub1)
-            return position, i
+            if position + 3 <= 7:
+                #print("position + 3 ", position + 3)
+                for diff in range(3):
+                    sec.append(sub1)
+                    position += 1
+            # print(sub1)
+            # print(sec)
+                if _class_var == 'a':
+                    labs_done['a'].append(sub1)
+                if _class_var == 'b':
+                    labs_done['b'].append(sub1)
+                if _class_var == 'c':
+                    labs_done['c'].append(sub1)
+                list_engaging_labs[type1] += 1
+                """ adding faculty who are engaging class to decrement list"""
+                add_fac_to_decrement_it(_class_var, sub1, loop=3)
+                return position, diff+1
         else:
             get_all_subs(position, include_others=False)
             for sub1, type1 in subs:
                 if type1 not in ['spl'] and list_engaging_labs[type1] < 2:
-                    for i in range(3):
-                        sec.append(sub1)
-                        position += 1
-            list_engaging_labs[type1] += 1
-            decrement_it.append(sub1)
-            return position, i
+                    for lb in labs_done.get(_class_var):
+                        if sub1 in lb:
+                            continue
+                        else:
 
+                            if position + 3 <= 7:
+                                list_engaging_labs[type1] += 1
+                                add_fac_to_decrement_it(_class_var, sub1, loop=3)
+                                for diff in range(3):
+                                    sec.append(sub1)
+                                    position += 1
+                                if _class_var == 'a':
+                                    labs_done['a'].append(sub1)
+                                if _class_var == 'b':
+                                    labs_done['b'].append(sub1)
+                                if _class_var == 'c':
+                                    labs_done['c'].append(sub1)
+                    return position, diff+1
+            return position, diff+1
     else:
         sec.append(sub1)
         position += 1
-        decrement_it.append(sub1)
+        add_fac_to_decrement_it(_class_var, sub1)
         return position, 1
 
 
 class time_table:
-    for day in range(1):
+    for day in range(3):
         i = 0
         sem5.pos_a = 0
         sem5.pos_b = 0
         sem5.pos_c = 0
-        for i in range(7):
-
+        a.clear()
+        b.clear()
+        c.clear()
+        for hour in range(7):
+            print()
+            print("loop", hour + 1)
             if isinstance(sem5.pos_a, int) and sem5.pos_a < 7:
                 update_subs(sem5.pos_a)
                 shuffle(subs)
                 for sub in subs:
-                    print(sub)
                     sub1 = sub[0]
                     type1 = sub[1]
+                    print("subject selected for a ", sub1)
                     if class_engaged[a_fac[sub1]]:
                         continue
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
-                        print("sec a")
-                        print(sem5.pos_a)
-                        print(sem5.pos_b)
-                        print(sem5.pos_c)
                         return_val = Spl(sub1, sem5.pos_a)
-                        print(sem5.pos_a)
-                        print(sem5.pos_b)
-                        print(sem5.pos_c)
+                        is_spl_done_for_week = True
                         break
                     else:
-                        sem5.pos_a, diff = xyz(sem5.pos_a, sub1, type1, a)
-                        class_engaged[a_fac[sub1]] += diff
-                        a_hours[sub1] -= diff
+                        if a_hours[sub1]:
+                            sem5.pos_a, diff = xyz(sem5.pos_a, sub1, type1, a, 'a')
+                            class_engaged[a_fac[sub1]] += diff
+                            a_hours[sub1] -= diff
                         break
 
             if isinstance(sem5.pos_b, int) and sem5.pos_b < 7:
@@ -290,24 +351,20 @@ class time_table:
                 for sub in subs:
                     sub1 = sub[0]
                     type1 = sub[1]
+                    print("subject selected for b ", sub1)
                     if class_engaged[b_fac[sub1]]:
                         continue
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
-                        print("sec b")
-                        print(sem5.pos_a)
-                        print(sem5.pos_b)
-                        print(sem5.pos_c)
                         return_val = Spl(sub1, sem5.pos_b)
-                        print(sem5.pos_a)
-                        print(sem5.pos_b)
-                        print(sem5.pos_c)
+                        is_spl_done_for_week = True
                         break
                     else:
-                        sem5.pos_b, diff = xyz(sem5.pos_b, sub1, type1, b)
-                        class_engaged[b_fac[sub1]] += diff
-                        b_hours[sub1] -= diff
+                        if b_hours[sub1]:
+                            sem5.pos_b, diff = xyz(sem5.pos_b, sub1, type1, b, 'b')
+                            class_engaged[b_fac[sub1]] += diff
+                            b_hours[sub1] -= diff
                         break
 
             if isinstance(sem5.pos_c, int) and sem5.pos_c < 7:
@@ -316,32 +373,29 @@ class time_table:
                 for sub in subs:
                     sub1 = sub[0]
                     type1 = sub[1]
+                    print("subject selected for c ", sub1)
                     if class_engaged[c_fac[sub1]]:
                         continue
                     if type1 in ['spl']:
                         if is_spl_done_for_week:
                             continue
-                        print("sec c")
-                        print(sem5.pos_a)
-                        print(sem5.pos_b)
-                        print(sem5.pos_c)
                         return_val = Spl(sub1, sem5.pos_c)
-                        print("sec b")
-                        print(sem5.pos_a)
-                        print(sem5.pos_b)
-                        print(sem5.pos_c)
+                        is_spl_done_for_week = True
                         break
                     else:
-                        sem5.pos_c, diff = xyz(sem5.pos_c, sub1, type1, c)
-                        class_engaged[c_fac[sub1]] += diff
-                        c_hours[sub1] -= diff
+                        if c_hours[sub1]:
+                            sem5.pos_c, diff = xyz(sem5.pos_c, sub1, type1, c, 'c')
+                            class_engaged[c_fac[sub1]] += diff
+                            c_hours[sub1] -= diff
                         break
+            print(a)
+            print(sem5.pos_a)
+            print(b)
+            print(sem5.pos_b)
+            print(c)
+            print(sem5.pos_c)
+            print(decrement_it)
+            print(class_engaged)
             decrement_hours()
-            print()
-            print()
-
-
-print(a)
-print(b)
-print(c)
-print(list_engaging_labs)
+            decrement_it.clear()
+            print(class_engaged)
