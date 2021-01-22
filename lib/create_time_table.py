@@ -1,10 +1,14 @@
 """ picks subject from subs list if the sub not present sub_fac table then creates error """
+""" now you can remove decrement it fuction """
 
 import sqlite3
 from random import shuffle
 from lib.queries import queries
 
-conn = sqlite3.connect("database/TimesOfTimeTable.db")
+list_engaging_labs = {'lab1': 0, 'lab2': 0, 'lab3': 0}
+
+path_to_db = '/home/peter/PycharmProjects/TimesOfTimeTable/demoapp/database/TimesOfTimeTable.db'
+conn = sqlite3.connect(path_to_db)
 cur = conn.cursor()
 
 """ x_fac[sub] = sub faculty for class x """
@@ -87,7 +91,8 @@ def init_fac():
         class_engaged[row[1]] = 0
 
     cur.execute('select distinct  fac_short_name from faculty')
-    for fname in cur.fetchall():
+    facs = cur.fetchall()
+    for fname in facs:
         fac_list.append(fname[0])
 
 
@@ -137,13 +142,12 @@ def decrement_hours():
     # for di in class_engaged:
     #     if di[]
     for f in fac_list:
-        try:
-            if class_engaged[f] <= 0:
-                pass
-            else:
-                class_engaged[f] -= 1
-        except KeyError:
+        if class_engaged[f] < 1:
             pass
+        else:
+            class_engaged[f] -= 1
+
+
 
 def add_fac_to_decrement_it(_class_var, sub1, loop=1):
     """ adding faculty who are engaging class to decrement list"""
@@ -164,7 +168,7 @@ a = list()
 b = list()
 c = list()
 
-list_engaging_labs = {'lab1': 0, 'lab2': 0, 'lab3': 0}
+
 
 
 class positions_of_class():
@@ -185,8 +189,7 @@ spl_sub = spl()
 sem5 = positions_of_class()
 
 """ dictionary of list  """
-labs_done = dict()
-labs_done = {'a': [], 'b': [], 'c': []}
+
 
 
 def get_one_sub(position, include_others=True, only_others=False, return_type=False):
@@ -200,11 +203,12 @@ def get_one_sub(position, include_others=True, only_others=False, return_type=Fa
 
 
 def get_all_subs(position, include_others=True, only_others=False):
+    """ no need to return, because update is make 'subs' list. its accessible """
     update_subs(position, include_others=include_others, only_others=only_others)
     return
 
 
-def Spl(sub1, position):
+def Spl(sub1, position, day):
     """ return value zero represents any sub is not appended to any class"""
     """ return vale 1, spl subject is appended to all the class """
     if spl_sub.is_spl_done_for_week:
@@ -213,21 +217,27 @@ def Spl(sub1, position):
     if highest in [0, 2, 4]:
         for loop in range(highest - sem5.pos_a):
             if sem5.pos_a < highest:
-                sub2 = get_one_sub(position, only_others=True)
+                sub2, type2 = get_one_sub(position, only_others=True, return_type=True)
+                if not a_hours[sub1] > hours.hour_greaterthan(type2, day):
+                    continue
                 a.append(sub2)
                 class_engaged[a_fac[sub2]] += 1
                 a_hours[sub2] -= 1
                 sem5.pos_a += 1
         for loop in range(highest - sem5.pos_b):
             if sem5.pos_b < highest:
-                sub2 = get_one_sub(position, only_others=True)
+                sub2, type2 = get_one_sub(position, only_others=True, return_type=True)
+                if not b_hours[sub1] > hours.hour_greaterthan(type2, day):
+                    continue
                 b.append(sub2)
                 class_engaged[b_fac[sub2]] += 1
                 b_hours[sub2] -= 1
                 sem5.pos_b += 1
         for loop in range(highest - sem5.pos_c):
             if sem5.pos_c < highest:
-                sub2 = get_one_sub(position, only_others=True)
+                sub2, type2 = get_one_sub(position, only_others=True, return_type=True)
+                if not c_hours[sub1] > hours.hour_greaterthan(type2, day):
+                    continue
                 c.append(sub2)
                 class_engaged[c_fac[sub2]] += 1
                 c_hours[sub2] -= 1
@@ -238,6 +248,8 @@ def Spl(sub1, position):
             b.append(sub1)
             c.append(sub1)
             class_engaged[b_fac[sub1]] += 1
+            class_engaged[a_fac[sub1]] += 1
+            class_engaged[c_fac[sub1]] += 1
             sem5.pos_a += 1
             sem5.pos_b += 1
             sem5.pos_c += 1
@@ -248,8 +260,9 @@ def Spl(sub1, position):
         return 0
     return -1
 
-
-def xyz(position, sub1, type1, sec, _class_var):
+labs_done = dict()
+labs_done = {'a': [], 'b': [], 'c': []}
+def xyz(position, sub1, type1, sec, _class_var, day):
     diff = 0
     for lb in labs_done.get(_class_var):
         if sub1 in lb:
@@ -261,6 +274,15 @@ def xyz(position, sub1, type1, sec, _class_var):
             if position + 3 <= 7:
                 for diff in range(3):
                     sec.append(sub1)
+                    if _class_var == 'a':
+                        a_hours[sub1] -= 1
+                        class_engaged[a_fac[sub1]] += 1
+                    elif _class_var == 'b':
+                        b_hours[sub1] -= 1
+                        class_engaged[b_fac[sub1]] += 1
+                    elif _class_var == 'c':
+                        c_hours[sub1] -= 1
+                        class_engaged[c_fac[sub1]] += 1
                     position += 1
                 if _class_var == 'a':
                     labs_done['a'].append(sub1)
@@ -280,12 +302,20 @@ def xyz(position, sub1, type1, sec, _class_var):
                         if sub1 in lb:
                             continue
                         else:
-
                             if position + 3 <= 7:
                                 list_engaging_labs[type1] += 1
                                 add_fac_to_decrement_it(_class_var, sub1, loop=3)
                                 for diff in range(3):
                                     sec.append(sub1)
+                                    if _class_var == 'a':
+                                        a_hours[sub1] -= 1
+                                        class_engaged[a_fac[sub1]] += 1
+                                    elif _class_var == 'b':
+                                        b_hours[sub1] -= 1
+                                        class_engaged[b_fac[sub1]] += 1
+                                    elif _class_var == 'c':
+                                        c_hours[sub1] -= 1
+                                        class_engaged[c_fac[sub1]] += 1
                                     position += 1
                                 if _class_var == 'a':
                                     labs_done['a'].append(sub1)
@@ -295,15 +325,77 @@ def xyz(position, sub1, type1, sec, _class_var):
                                     labs_done['c'].append(sub1)
                     return position, diff + 1
             return position, diff + 1
-    else:
-        sec.append(sub1)
-        position += 1
-        add_fac_to_decrement_it(_class_var, sub1)
+
+
+def normal_classes(position, sub1, type1, sec, _class_var, day):
+    if _class_var == 'a':
+        if a_hours[sub1] > hours.hour_greaterthan(type1, day):
+            sec.append(sub1)
+            a_hours[sub1] -= 1
+            class_engaged[a_fac[sub1]] += 1
+            position += 1
+            add_fac_to_decrement_it(_class_var, sub1)
+            return position, 1
+        get_all_subs(position, only_others=True)
+        for sub1, type1 in subs:
+            if not a_hours[sub1] > hours.hour_greaterthan(type1, day):
+                continue
+            sec.append(sub1)
+            a_hours[sub1] -= 1
+            class_engaged[a_fac[sub1]] += 1
+            position += 1
+            add_fac_to_decrement_it(_class_var, sub1)
+            return position, 1
         return position, 1
+    if _class_var == 'b':
+        if b_hours[sub1] > hours.hour_greaterthan(type1, day):
+            sec.append(sub1)
+            b_hours[sub1] -= 1
+            class_engaged[b_fac[sub1]] += 1
+            position += 1
+            add_fac_to_decrement_it(_class_var, sub1)
+            return position, 1
+        get_all_subs(position, only_others=True)
+        for sub1, type1 in subs:
+            if not b_hours[sub1] > hours.hour_greaterthan(type1, day):
+                continue
+            sec.append(sub1)
+            b_hours[sub1] -= 1
+            class_engaged[b_fac[sub1]] += 1
+            position += 1
+            add_fac_to_decrement_it(_class_var, sub1)
+            return position, 1
+        return position, 1
+    if _class_var == 'c':
+        if c_hours[sub1] > hours.hour_greaterthan(type1, day):
+            sec.append(sub1)
+            c_hours[sub1] -= 1
+            class_engaged[c_fac[sub1]] += 1
+            position += 1
+            add_fac_to_decrement_it(_class_var, sub1)
+            return position, 1
+        get_all_subs(position, only_others=True)
+        for sub1, type1 in subs:
+            if not c_hours[sub1] > hours.hour_greaterthan(type1, day):
+                continue
+            sec.append(sub1)
+            c_hours[sub1] -= 1
+            class_engaged[c_fac[sub1]] += 1
+            position += 1
+            add_fac_to_decrement_it(_class_var, sub1)
+            return position, 1
+        return position, 1
+
+from lib import hours_per_sub as hours
+
 
 
 class time_table:
-    for day in range(7):
+    type1 = None
+    sub1 = None
+    for day in range(6):
+        class_engaged = dict.fromkeys(class_engaged, 0)
+        list_engaging_labs = dict.fromkeys(list_engaging_labs, 0)
         i = 0
         sem5.pos_a = 0
         sem5.pos_b = 0
@@ -311,71 +403,163 @@ class time_table:
         a.clear()
         b.clear()
         c.clear()
-        for hour in range(15):
+
+        for hour in range(12):
+            decrement_hours()
             if isinstance(sem5.pos_a, int) and sem5.pos_a < 7:
-                update_subs(sem5.pos_a)
-                shuffle(subs)
-                for sub in subs:
-                    sub1 = sub[0]
-                    type1 = sub[1]
-                    if class_engaged[a_fac[sub1]]:
-                        continue
-                    if type1 in ['spl']:
-                        if spl_sub.is_spl_done_for_week:
+                if day >= 3:
+                    sub_dict = {key: val for key, val in sorted(a_hours.items(), key=lambda ele: ele[1], reverse=True)}
+                    for sub, hour_rem in sub_dict.items():
+                        sub1 = sub
+                        hour_left = hour_rem
+                        cur.execute('select sub_type from subjects where sub_short_name = ?', (sub,))
+                        type1 = cur.fetchone()[0]
+                        """ not more than two subjects per day """
+                        if not a_hours[sub1] > hours.hour_greaterthan(type1, day):
                             continue
-                        return_val = Spl(sub1, sem5.pos_a)
-                        is_spl_done_for_week = True
-                        break
-                    else:
-                        if a_hours[sub1]:
-                            sem5.pos_a, diff = xyz(sem5.pos_a, sub1, type1, a, 'a')
-                            class_engaged[a_fac[sub1]] += diff
-                            a_hours[sub1] -= diff
-                        break
+                        if class_engaged[a_fac[sub1]]:
+                            continue
+                        if type1 in ['spl']:
+                            if spl_sub.is_spl_done_for_week:
+                                continue
+                            return_val = Spl(sub1, sem5.pos_a, day)
+                            is_spl_done_for_week = True
+                            break
+                        if type1 in ['lab1', 'lab2', 'lab3']:
+                            if a_hours[sub1]:
+                                sem5.pos_a, diff = xyz(sem5.pos_a, sub1, type1, a, 'a', day)
+                            break
+                        else:
+                            if a_hours[sub1]:
+                                sem5.pos_a, diff = normal_classes(sem5.pos_a, sub1, type1, a, 'a', day)
+                            break
+                else:
+                    update_subs(sem5.pos_a)
+                    shuffle(subs)
+                    for sub in subs:
+                        sub1 = sub[0]
+                        type1 = sub[1]
+                        if not a_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            continue
+                        if class_engaged[a_fac[sub1]]:
+                            continue
+                        if type1 in ['spl']:
+                            if spl_sub.is_spl_done_for_week:
+                                continue
+                            return_val = Spl(sub1, sem5.pos_a, day)
+                            is_spl_done_for_week = True
+                            break
+                        if type1 in ['lab1', 'lab2', 'lab3']:
+                            if a_hours[sub1]:
+                                sem5.pos_a, diff = xyz(sem5.pos_a, sub1, type1, a, 'a', day)
+                            break
+                        else:
+                            if a_hours[sub1]:
+                                sem5.pos_a, diff = normal_classes(sem5.pos_a, sub1, type1, a, 'a', day)
+                            break
 
             if isinstance(sem5.pos_b, int) and sem5.pos_b < 7:
-                update_subs(sem5.pos_b)
-                shuffle(subs)
-                for sub in subs:
-                    sub1 = sub[0]
-                    type1 = sub[1]
-                    if class_engaged[b_fac[sub1]]:
-                        continue
-                    if type1 in ['spl']:
-                        if spl_sub.is_spl_done_for_week:
+                if day >= 3:
+                    sub_dict = {key: val for key, val in sorted(b_hours.items(), key=lambda ele: ele[1], reverse=True)}
+                    for sub, hour_left in sub_dict.items():
+                        sub1 = sub
+                        hour_left = hour_rem
+                        cur.execute('select sub_type from subjects where sub_short_name = ?', (sub,))
+                        type1 = cur.fetchone()[0]
+                        if not b_hours[sub1] > hours.hour_greaterthan(type1, day):
                             continue
-                        return_val = Spl(sub1, sem5.pos_b)
-                        break
-                    else:
-                        if b_hours[sub1]:
-                            sem5.pos_b, diff = xyz(sem5.pos_b, sub1, type1, b, 'b')
-                            class_engaged[b_fac[sub1]] += diff
-                            b_hours[sub1] -= diff
-                        break
+                        if class_engaged[b_fac[sub1]]:
+                            continue
+                        if type1 in ['spl']:
+                            if spl_sub.is_spl_done_for_week:
+                                continue
+                            return_val = Spl(sub1, sem5.pos_b, day)
+                            break
+                        if type1 in ['lab1', 'lab2', 'lab3']:
+                            if b_hours[sub1]:
+                                sem5.pos_b, diff = xyz(sem5.pos_b, sub1, type1, b, 'b', day)
+                            break
+                        else:
+                            if b_hours[sub1]:
+                                sem5.pos_b, diff = normal_classes(sem5.pos_b, sub1, type1, b, 'b', day)
+                            break
+                else:
+                    update_subs(sem5.pos_b)
+                    shuffle(subs)
+                    for sub in subs:
+                        sub1 = sub[0]
+                        type1 = sub[1]
+                        if not b_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            continue
+                        if class_engaged[b_fac[sub1]]:
+                            continue
+                        if type1 in ['spl']:
+                            if spl_sub.is_spl_done_for_week:
+                                continue
+                            return_val = Spl(sub1, sem5.pos_b, day)
+                            break
+                        if type1 in ['lab1', 'lab2', 'lab3']:
+                            if b_hours[sub1]:
+                                sem5.pos_b, diff = xyz(sem5.pos_b, sub1, type1, b, 'b', day)
+                            break
+                        else:
+                            if b_hours[sub1]:
+                                sem5.pos_b, diff = normal_classes(sem5.pos_b, sub1, type1, b, 'b', day)
+                            break
 
             if isinstance(sem5.pos_c, int) and sem5.pos_c < 7:
-                update_subs(sem5.pos_c)
-                shuffle(subs)
-                for sub in subs:
-                    sub1 = sub[0]
-                    type1 = sub[1]
-                    if class_engaged[c_fac[sub1]]:
-                        continue
-                    if type1 in ['spl']:
-                        if spl_sub.is_spl_done_for_week:
+                if day >= 3:
+                    sub_dict = {key: val for key, val in sorted(c_hours.items(), key=lambda ele: ele[1], reverse=True)}
+                    for sub, hour_left in sub_dict.items():
+                        sub1 = sub
+                        hour_left = sub
+                        cur.execute('select sub_type from subjects where sub_short_name = ?', (sub,))
+                        type1 = cur.fetchone()[0]
+                        if not c_hours[sub1] > hours.hour_greaterthan(type1, day):
                             continue
-                        return_val = Spl(sub1, sem5.pos_c)
-                        is_spl_done_for_week = True
-                        break
-                    else:
-                        if c_hours[sub1]:
-                            sem5.pos_c, diff = xyz(sem5.pos_c, sub1, type1, c, 'c')
-                            class_engaged[c_fac[sub1]] += diff
-                            c_hours[sub1] -= diff
-                        break
-            decrement_hours()
+                        if class_engaged[c_fac[sub1]]:
+                            continue
+                        if type1 in ['spl']:
+                            if spl_sub.is_spl_done_for_week:
+                                continue
+                            return_val = Spl(sub1, sem5.pos_c, day)
+                            is_spl_done_for_week = True
+                            break
+                        if type1 in ['lab1', 'lab2', 'lab3']:
+                            if c_hours[sub1]:
+                                sem5.pos_c, diff = xyz(sem5.pos_c, sub1, type1, c, 'c', day)
+                            break
+                        else:
+                            if c_hours[sub1]:
+                                sem5.pos_c, diff = normal_classes(sem5.pos_c, sub1, type1, c, 'c', day)
+                            break
+                else:
+                    update_subs(sem5.pos_c)
+                    shuffle(subs)
+                    for sub in subs:
+                        sub1 = sub[0]
+                        type1 = sub[1]
+                        if not c_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            continue
+                        if class_engaged[c_fac[sub1]]:
+                            continue
+                        if type1 in ['spl']:
+                            if spl_sub.is_spl_done_for_week:
+                                continue
+                            return_val = Spl(sub1, sem5.pos_c, day)
+                            is_spl_done_for_week = True
+                            break
+                        if type1 in ['lab1', 'lab2', 'lab3']:
+                            if c_hours[sub1]:
+                                sem5.pos_c, diff = xyz(sem5.pos_c, sub1, type1, c, 'c', day)
+                            break
+                        else:
+                            if c_hours[sub1]:
+                                sem5.pos_c, diff = normal_classes(sem5.pos_c, sub1, type1, c, 'c', day)
+                            break
             decrement_it.clear()
+        print()
         print(a)
         print(b)
         print(c)
-        print()
+
