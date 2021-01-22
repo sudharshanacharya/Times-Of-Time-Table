@@ -1,6 +1,7 @@
 import sqlite3
 
-conn = sqlite3.connect('database/TimesOfTimeTable.db')
+path_to_db = '/home/peter/PycharmProjects/TimesOfTimeTable/demoapp/database/TimesOfTimeTable.db'
+conn = sqlite3.connect(path_to_db)
 cur = conn.cursor()
 
 
