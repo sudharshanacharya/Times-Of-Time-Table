@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TimeTable</title>
+    <style>
+        #leftbox {
+            float:left;
+            background:cornsilk;
+            /*width:25%;*/
+            /*height:280px;*/
+            border: 1px solid black;
+            /*border-bottom-color: #3e8e41;*/
+            margin: 10px 10px;
+        }
+        #middlebox {
+            float: left;
+            top: 50%;
+            left: 50%;
+            /*background:cornsilk;*/
+            /*width:25%;*/
+            /*height:280px;*/
+            /*border: 1px solid black;*/
+            /*border-bottom-color: #3e8e41;*/
+            margin: 10px 30px;
+        }
+    </style>
+</head>
+<body>
+<div id="leftbox">
+    <div>
+        <table>
+            <tr>
+                <td>Monday</td>
+                {% for sub in monday_a %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                {% for sub in tuesday_a %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                {% for sub in wednesday_a %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Thusday</td>
+                {% for sub in thusday_a %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Friday</td>
+                {% for sub in friday_a %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                {% for sub in saturday_a %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <br>
+        </table>
+    </div>
+    <br>
+    <div>
+        <table>
+            <tr>
+                <td>Monday</td>
+                {% for sub in monday_b %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                {% for sub in tuesday_b %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                {% for sub in wednesday_b %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Thusday</td>
+                {% for sub in thusday_b %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Friday</td>
+                {% for sub in friday_b %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                {% for sub in saturday_b %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+        </table>
+    </div>
+    <br>
+    <div >
+        <table>
+            <tr>
+                <td>Monday</td>
+                {% for sub in monday_c %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                {% for sub in tuesday_c %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                {% for sub in wednesday_c %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Thusday</td>
+                {% for sub in thusday_c %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Friday</td>
+                {% for sub in friday_c %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td>Saturday</td>
+                {% for sub in saturday_c %}
+                <td>{{ sub }}</td>
+                {% endfor %}
+            </tr>
+        </table>
+    </div>
+</div>
+<div id="middlebox">
+    <form action="{{url_for('refresh')}}" method=post>
+        <button type="submit" name="refresh" >Refresh</button>
+    </form>
+</div>
+
+
+</table>
+</body>
+</html>
