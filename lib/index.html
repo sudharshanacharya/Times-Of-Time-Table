@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='style.css')}}">
+    <title>Document</title>
+
+    <style>
+
+        .topnav {
+            overflow: hidden;
+            background-color: #333;
+        }
+
+
+        .topnav a {
+            float: left;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+
+        .topnav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .topnav a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .div{
+            top: 30%;
+            left: 40%;
+        }
+        button{
+            color: aquamarine;
+            border-radius: 30%;
+            margin-left: 5%;
+        }
+        #leftbox{
+            float: left;
+        }
+        #nextbox{
+            float: left;
+        }
+        body{
+            background-image: url("https://ak8.picdn.net/shutterstock/videos/11664038/thumb/1.jpg?i10c=img.resize(height:160)");
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+    </style>
+</head>
+<body>
+<div class="topnav">
+    <a class="active" href={{url_for('index')}}>Home</a>
+    <a href={{url_for('fac_detail')}}>EDIT FACULTY</a>
+
+    <a href={{url_for('sub_details')}}> ADD SUBJECTS</a>
+    <a href={{url_for('assign')}}> ASSIGN SUBJECTS</a>
+    <a href={{url_for('time_table')}}> TIMETABLE</a>
+</div>
+
+<h1 style="color: #dddddd"><CENTER>TIME TABLE</CENTER></h1>
+<div >
+    <table border="2" cellspacing="3" align="center" style="background-color: #f2f2f2">
+        <tr>
+            <td align="center">
+            <td>8:30-9:30
+            <td>9:30-10:30
+            <td>10:30-10:45
+            <td>10:45-11:45
+            <td>11:45-12:45
+            <td>12:40-1:30
+            <td>1:30-2:30
+            <td>2:30-3:30
+            <td>3:30-4:30
+        </tr>
+        <tr>
+            <td align="center">MONDAY
+            <td align="center">{{ monday_a[0] }}
+            <td align="center">{{ monday_a[1] }}<font color="black"><br>
+            <td rowspan="6"align="center">B<br>R<br>E<br>A<br>K
+            <td align="center">{{ monday_a[2] }}<font color="black"><br>
+            <td align="center">{{ monday_a[3] }}<font color="black"> <br>
+            <td rowspan="6"align="center">L<br>U<br>N<br>C<br>H
+            <td align="center">{{ monday_a[4] }}<font color="black"> <br>
+            <td align="center">{{ monday_a[5] }}<font color="black"> <br>
+            <td align="center">{{ monday_a[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">TUESDAY
+            <td align="center">{{ tuesday_a[0] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_a[1] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_a[2] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_a[3] }}<font color="black"> <BR>
+            <td align="center">{{ tuesday_a[4] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_a[5] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_a[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">WEDNESDAY
+            <td align="center">{{ wednesday_a[0] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_a[1] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_a[2] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_a[3] }}<font color="black"> <BR>
+            <td align="center">{{ wednesday_a[4] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_a[5] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_a[6] }}</td>
+        <tr>
+            <td align="center">THURSDAY
+            <td align="center">{{ thusday_a[0] }}<font color="black"> <br>
+            <td align="center">{{ thusday_a[1] }}<font color="black"> <br>
+            <td align="center"><font color="black"> <br>
+            <td align="center">{{ thusday_a[2] }}<font color="black"> <BR>
+            <td align="center">{{ thusday_a[3] }}<font color="black"> <br>
+            <td align="center">{{ thusday_a[4] }}<font color="black"> <br>
+            <td align="center">{{ thusday_a[5] }}</td>
+        </tr>
+        <tr>
+            <td align="center">FRIDAY
+            <td align="center">{{ friday_a[0] }}<font color="black"> <br>
+            <td align="center">{{ friday_a[1] }}<font color="black"> <br>
+            <td align="center">{{ friday_a[2] }}<font color="black"> <br>
+            <td align="center">{{ friday_a[3] }}<font color="black"> <BR>
+            <td align="center">{{ friday_a[4] }}<font color="black"> <br>
+            <td align="center">{{ friday_a[5] }}<font color="black"> <br>
+            <td align="center">{{ friday_a[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">SATURDAY
+            <td align="center">{{ saturday_a[0] }}<font color="black"> <br>
+            <td align="center">{{ saturday_a[1] }}<font color="black"> <br>
+            <td align="center">{{ saturday_a[2] }}<font color="black"> <br>
+            <td align="center">{{ saturday_a[3] }}<font color="black"> <BR>
+            <td align="center">{{ saturday_a[4] }}<font color="black"> <br>
+            <td align="center">{{ saturday_a[5] }}<font color="black"> <br>
+            <td align="center">{{ saturday_a[6] }}</td>
+        </tr>
+    </table>
+</div>
+<br>
+<br>
+<div>
+    <table border="2" cellspacing="3" align="center" style="background-color: #f2f2f2">
+        <tr>
+            <td align="center">
+            <td>8:30-9:30
+            <td>9:30-10:30
+            <td>10:30-10:45
+            <td>10:45-11:45
+            <td>11:45-12:45
+            <td>12:40-1:30
+            <td>1:30-2:30
+            <td>2:30-3:30
+            <td>3:30-4:30
+        </tr>
+        <tr>
+            <td align="center">MONDAY
+            <td align="center">{{ monday_b[0] }}
+            <td align="center">{{ monday_b[1] }}<font color="black"><br>
+            <td rowspan="6"align="center">B<br>R<br>E<br>A<br>K
+            <td align="center">{{ monday_b[2] }}<font color="black"><br>
+            <td align="center">{{ monday_b[3] }}<font color="black"> <br>
+            <td rowspan="6"align="center">L<br>U<br>N<br>C<br>H
+            <td align="center">{{ monday_b[4] }}<font color="black"> <br>
+            <td align="center">{{ monday_b[5] }}<font color="black"> <br>
+            <td align="center">{{ monday_b[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">TUESDAY
+            <td align="center">{{ tuesday_b[0] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_b[1] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_b[2] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_b[3] }}<font color="black"> <BR>
+            <td align="center">{{ tuesday_b[4] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_b[5] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_b[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">WEDNESDAY
+            <td align="center">{{ wednesday_b[0] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_b[1] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_b[2] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_b[3] }}<font color="black"> <BR>
+            <td align="center">{{ wednesday_b[4] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_b[5] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_b[6] }}</td>
+        <tr>
+            <td align="center">THURSDAY
+            <td align="center">{{ thusday_b[0] }}<font color="black"> <br>
+            <td align="center">{{ thusday_b[1] }}<font color="black"> <br>
+            <td align="center">{{ thusday_b[2] }}<font color="black"> <BR>
+            <td align="center">{{ thusday_b[3] }}<font color="black"> <br>
+            <td align="center">{{ thusday_b[4] }}<font color="black"> <br>
+            <td align="center">{{ thusday_b[5] }}<font color="black"> <br>
+            <td align="center">{{ thusday_b[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">FRIDAY
+            <td align="center">{{ friday_b[0] }}<font color="black"> <br>
+            <td align="center">{{ friday_b[1] }}<font color="black"> <br>
+            <td align="center">{{ friday_b[2] }}<font color="black"> <br>
+            <td align="center">{{ friday_b[3] }}<font color="black"> <BR>
+            <td align="center">{{ friday_b[4] }}<font color="black"> <br>
+            <td align="center">{{ friday_b[5] }}<font color="black"> <br>
+            <td align="center">{{ friday_b[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">SATURDAY
+            <td align="center">{{ saturday_b[0] }}<font color="black"> <br>
+            <td align="center">{{ saturday_b[1] }}<font color="black"> <br>
+            <td align="center">{{ saturday_b[2] }}<font color="black"> <br>
+            <td align="center">{{ saturday_b[3] }}<font color="black"> <BR>
+            <td align="center">{{ saturday_b[4] }}<font color="black"> <br>
+            <td align="center">{{ saturday_b[5] }}<font color="black"> <br>
+            <td align="center">{{ saturday_b[6] }}</td>
+        </tr>
+    </table>
+</div>
+<br>
+<br>
+<div>
+    <table border="2" cellspacing="3" align="center" style="background-color: #dddddd">
+        <tr>
+            <td align="center">
+            <td>8:30-9:30
+            <td>9:30-10:30
+            <td>10:30-10:45
+            <td>10:45-11:45
+            <td>11:45-12:45
+            <td>12:40-1:30
+            <td>1:30-2:30
+            <td>2:30-3:30
+            <td>3:30-4:30
+        </tr>
+        <tr>
+            <td align="center">MONDAY
+            <td align="center">{{ monday_c[0] }}
+            <td align="center">{{ monday_c[1] }}<font color="black"><br>
+            <td rowspan="6"align="center">B<br>R<br>E<br>A<br>K
+            <td align="center">{{ monday_c[2] }}<font color="black"><br>
+            <td align="center">{{ monday_c[3] }}<font color="black"> <br>
+            <td rowspan="6"align="center">L<br>U<br>N<br>C<br>H
+            <td align="center">{{ monday_c[4] }}<font color="black"> <br>
+            <td align="center">{{ monday_c[5] }}<font color="black"> <br>
+            <td align="center">{{ monday_c[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">TUESDAY
+            <td align="center">{{ tuesday_c[0] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_c[1] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_c[2] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_c[3] }}<font color="black"> <BR>
+            <td align="center">{{ tuesday_c[4] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_c[5] }}<font color="black"> <br>
+            <td align="center">{{ tuesday_c[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">WEDNESDAY
+            <td align="center">{{ wednesday_c[0] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_c[1] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_c[2] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_c[3] }}<font color="black"> <BR>
+            <td align="center">{{ wednesday_c[4] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_c[5] }}<font color="black"> <br>
+            <td align="center">{{ wednesday_c[6] }}</td>
+        <tr>
+            <td align="center">THURSDAY
+            <td align="center">{{ thusday_c[0] }}<font color="black"> <br>
+            <td align="center">{{ thusday_c[1] }}<font color="black"> <br>
+            <td align="center">{{ thusday_c[2] }}<font color="black"> <BR>
+            <td align="center">{{ thusday_a[3] }}<font color="black"> <br>
+            <td align="center">{{ thusday_c[4] }}<font color="black"> <br>
+            <td align="center">{{ thusday_c[5] }}<font color="black"> <br>
+            <td align="center">{{ thusday_c[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">FRIDAY
+            <td align="center">{{ friday_c[0] }}<font color="black"> <br>
+            <td align="center">{{ friday_c[1] }}<font color="black"> <br>
+            <td align="center">{{ friday_c[2] }}<font color="black"> <br>
+            <td align="center">{{ friday_c[3] }}<font color="black"> <BR>
+            <td align="center">{{ friday_c[4] }}<font color="black"> <br>
+            <td align="center">{{ friday_c[5] }}<font color="black"> <br>
+            <td align="center">{{ friday_c[6] }}</td>
+        </tr>
+        <tr>
+            <td align="center">SATURDAY
+            <td align="center">{{ saturday_c[0] }}<font color="black"> <br>
+            <td align="center">{{ saturday_c[1] }}<font color="black"> <br>
+            <td align="center">{{ saturday_c[2] }}<font color="black"> <br>
+            <td align="center">{{ saturday_c[3] }}<font color="black"> <BR>
+            <td align="center">{{ saturday_c[4] }}<font color="black"> <br>
+            <td align="center">{{ saturday_c[5] }}<font color="black"> <br>
+            <td align="center">{{ saturday_c[6] }}</td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>
