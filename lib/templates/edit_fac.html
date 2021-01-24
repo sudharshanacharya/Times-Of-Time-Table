@@ -4,6 +4,34 @@
     <meta charset="UTF-8">
     <title>Faculty details</title>
     <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .topnav {
+            overflow: hidden;
+            background-color: #333;
+        }
+
+        .topnav a {
+            float: left;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+        }
+
+        .topnav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .topnav a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
         #leftbox {
             float:left;
             background:cornsilk;
@@ -20,9 +48,9 @@
             /*background:cornsilk;*/
             /*width:25%;*/
             /*height:280px;*/
-            border: 1px solid black;
+            /*border: 1px solid black;*/
             /*border-bottom-color: #3e8e41;*/
-            margin: 10px 10px;
+            margin: 10px 30px;
         }
         #rightbox{
             float:left;
@@ -86,6 +114,16 @@
     </style>
 </head>
 <body>
+<div class="topnav">
+    <a  href={{url_for('index')}}>Home</a>
+    <a class="active" href={{url_for('fac_detail')}}>EDIT FACULTY</a>
+
+    <a href={{url_for('sub_details')}}> ADD SUBJECTS</a>
+    <a href={{url_for('assign')}}> ASSIGN SUBJECTS</a>
+    <a href={{url_for('time_table')}}> TIMETABLE</a>
+</div>
+
+
 <h1>Faculty Details</h1>
 <div id = "boxes">
     <div id = "leftbox">
@@ -107,7 +145,8 @@
                 <td>{{ faculty[1] }}</td>
                 <td>
                     <form action="{{url_for('del_fac_info')}}" method=post>
-                        <button class="btn danger" type="submit" name="delete" value={{faculty[1]}}>-</button>
+                        <button class="btn danger" id="delete" onclick="confirm_delete()" name="delete" value={{faculty[1]}}>-</button>
+                        <p id="confirm_delete"></p>
                     </form>
                 </td>
             </tr>
@@ -115,6 +154,11 @@
         </table>
     </div>
 
+    <div id="middlebox">
+        <p> Edit faculty db -------> <a href="{{ url_for('fac_detail')}}"> here </a>
+        <p> Edit subjects db ------> <a href="{{url_for('sub_details')}}"> here </a>
+        <p> Edit sub_fac relation -> <a href="{{url_for('assign')}}"> here</a>
+    </div>
 
     <!-- The modal -->
     <div id="myModal" class="modal">
@@ -145,9 +189,19 @@
     }
     // when the user clicks anywhere outside the modal, close the modal
     window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function confirm_delete() {
+        if (confirm('sure you want to delete?')){
+                    {{url_for('del_fac_info')}}.onsubmit()
+        }
+        else{
+
+        }
+    }
 }
 </script>
 
