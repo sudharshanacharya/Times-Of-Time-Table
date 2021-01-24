@@ -533,6 +533,24 @@ class create_time_table:
                                     self.var.pos_c = self.normal_classes(self.var.pos_c, sub1, type1, self.var.c, 'c', day)
                                 break
                 self.var.decrement_it.clear()
+                for i in range(7 - len(self.var.a)):
+                    """ double ckeck by for & if """
+                    if len(self.var.a) < 7:
+                        self.var.x.append('__')
+                cur.execute("insert into memory_a values (?,?,?,?,?,?,?,)",
+                            (self.var.a[0], self.var.a[1], self.var.a[2], self.var.a[3], self.var.a[4], self.var.a[5], self.var.a[6]), )
+                for i in range(7 - len(self.var.b)):
+                    """ double ckeck by for & if """
+                    if len(self.var.b) < 7:
+                        self.var.b.append('__')
+                cur.execute("insert into memory_b values (?,?,?,?,?,?,?,)",
+                            (self.var.b[0], self.var.b[1], self.var.b[2], self.var.b[3], self.var.b[4], self.var.b[5], self.var.b[6]), )
+                for i in range(7 - len(self.var.c)):
+                    """ double ckeck by for & if """
+                    if len(self.var.c) < 7:
+                        self.var.c.append('__')
+                cur.execute("insert into memory_c values (?,?,?,?,?,?,?,)",
+                            (self.var.c[0], self.var.c[1], self.var.c[2], self.var.c[3], self.var.c[4], self.var.c[5], self.var.c[6]), )
             self.var.x.append(self.var.a.copy())
             self.var.y.append(self.var.b.copy())
             self.var.z.append(self.var.b.copy())
