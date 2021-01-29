@@ -7,14 +7,14 @@ cur = conn.cursor()
 
 class queries:
     create_table_subjects = """
-         create table subjects(
-         sub_id INTEGER PRIMARY KEY AUTOINCREMENT,
-         sub_short_name varchar(8) not null ,
-         sub_name varchar(20) not null,
-         sub_code varchar(10) not null,
-         sub_credit int not null,
-         sub_type varchar(10) not null 
-         );
+         CREATE TABLE IF NOT EXISTS "subjects" (
+	    "sub_id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+	    "sub_short_name"	varchar(8) NOT NULL,
+	    "sub_name"	varchar(20) NOT NULL,
+	    "sub_code"	varchar(10) NOT NULL,
+	    "sub_credit"	int NOT NULL,
+	    "sub_type"	varchar(10) NOT NULL,
+	    "SEM"	INTEGER NOT NULL
          """
 
     create_table_faculties = """
@@ -29,11 +29,10 @@ class queries:
          create table if not exists sub_fac(
          fac_id int not null,
          sec varchar(3) not null,
-         sub_id int not null,
+         sub_id int not null ,
          rem_hours int not null,
-         constraint _fac_id foreign key(fac_id) references faculty(fac_id),
-         constraint _sub_id foreign key(sub_id) references subjects(sub_id),
-         constraint pri_sub_fac primary key(fac_id, sub_id)
+         constraint _fac_id foreign key(fac_id) references faculty(fac_id) on delete cascade ,
+         constraint _sub_id foreign key(sub_id) references subjects(sub_id) on delete cascade ,
          );
          """
 
@@ -54,8 +53,11 @@ class queries:
     create view if not exists view1 as SELECT r.*, f.fac_short_name from sub_fac r, faculty f WHERE r.fac_id = f.fac_id;
     """
 
+    """" view2 is using now """
     view2 = """
-        create view if not exists view2 as SELECT r.*, f.fac_short_name, s.sub_short_name from sub_fac r, faculty f, subjects s WHERE r.fac_id = f.fac_id and r.sub_id = s.sub_id ;
+        create view if not exists view2 as SELECT r.*, f.fac_short_name, s.sub_short_name 
+        from sub_fac r, faculty f, subjects s 
+        WHERE r.fac_id = f.fac_id and r.sub_id = s.sub_id ;
     """
     def drop_table(self, table):
         cur.execute("drop table if exists ?", (table,))
@@ -63,3 +65,51 @@ class queries:
     def check_hours(self):
         cur.execute("select sum(rem_hours) from subjects")
         return cur.fetchone()
+
+    memory_a = """ create table if not EXISTS memory_a(
+    id INTEGER primary KEY ,
+    period1 varchar (15),
+    period2 varchar (15),
+    period3 varchar (15),
+    period4 varchar (15),
+    period5 varchar (15),
+    period6 varchar (15),
+    period7 varchar (15)
+	);
+    )"""
+
+    memory_b = """ create table if not EXISTS memory_b(
+        id INTEGER primary KEY ,
+        period1 varchar (15),
+        period2 varchar (15),
+        period3 varchar (15),
+        period4 varchar (15),
+        period5 varchar (15),
+        period6 varchar (15),
+        period7 varchar (15)
+    	);
+        )"""
+
+    memory_c = """ create table if not EXISTS memory_c(
+        id INTEGER primary KEY ,
+        period1 varchar (15),
+        period2 varchar (15),
+        period3 varchar (15),
+        period4 varchar (15),
+        period5 varchar (15),
+        period6 varchar (15),
+        period7 varchar (15)
+    	);
+        )"""
+
+    back_up = """
+        CREATE TABLE IF NOT EXISTS "subjects_backup" (
+	    "sub_id"	INTEGER PRIMARY KEY,
+	    "sub_short_name"	varchar(8) NOT NULL,
+	    "sub_name"	varchar(20) NOT NULL,
+	    "sub_code"	varchar(10) NOT NULL,
+	    "sub_credit"	int NOT NULL,
+	    "sub_type"	varchar(10) NOT NULL,
+	    "SEM"	INTEGER NOT NULL
+         );
+    """

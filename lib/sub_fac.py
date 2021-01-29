@@ -1,10 +1,10 @@
 import sqlite3
 from lib.queries import queries
 from lib.hours_per_sub import calculate_hours
-
+path_to_db = '/home/peter/PycharmProjects/TimesOfTimeTable/demoapp/database/TimesOfTimeTable.db'
 
 def edit_sub_fac(drop_table=False, create_table=False, ):
-    conn = sqlite3.connect("database/TimesOfTimeTable.db")
+    conn = sqlite3.connect(path_to_db)
     cur = conn.cursor()
 
     cal = calculate_hours(5, cur)  # raise API not done
@@ -15,7 +15,7 @@ def edit_sub_fac(drop_table=False, create_table=False, ):
         print("Table Dropped")
     if create_table:
         cur.execute(queries.sub_fac)
-    cur.execute(queries.sub_fac)
+        cur.execute(queries.sub_fac)
 
     sec = input("Enter section(A , B  or C): ").upper()
 
@@ -61,12 +61,12 @@ def edit_sub_fac(drop_table=False, create_table=False, ):
         if sub_type == ('major',):
             print("major")
             print("extra_hour")
-            try:
-                cur.execute("""
+            # try:
+            cur.execute("""
                         insert into sub_fac (fac_id,sec,sub_id, rem_hours) values (?, ?, ? ,?)
                         """, (fac_id, sec, sub_id, per_major,))
-            except:
-                print("subject already exists")
+            # except:
+            print("subject already exists")
 
         elif sub_type == ('not_theory',):
             print("not theory")

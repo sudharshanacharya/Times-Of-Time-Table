@@ -4,7 +4,10 @@ from lib.queries import queries
 from lib import hours_per_sub as hours
 path_to_db = '/home/peter/PycharmProjects/TimesOfTimeTable/demoapp/database/TimesOfTimeTable.db'
 
-class variables:
+
+class create_time_table:
+    """ picks subject from subs list if the sub not present sub_fac table then creates error """
+    """ now you can remove decrement it fuction """
     def __init__(self):
         self.is_spl_done_for_week = False
         self.list_engaging_labs = {'lab1': 0, 'lab2': 0, 'lab3': 0}
@@ -51,13 +54,8 @@ class variables:
         self.x = list()
         self.y = list()
         self.z = list()
-
-
-class create_time_table:
-    """ picks subject from subs list if the sub not present sub_fac table then creates error """
-    """ now you can remove decrement it fuction """
-    def __init__(self):
-        self.var = variables()
+    # def __init__(self):
+    #     self.var = variables()
         
     def create_custom(self):
         with sqlite3.connect(path_to_db) as conn:
@@ -66,7 +64,8 @@ class create_time_table:
             """ refers table 'subjects' """
             cur.execute('drop table if exists  custom')
             cur.execute(""" create table if not exists custom (sname varchar (20), stype varchar(20), timing int );""")
-            cur.execute("""SELECT distinct sub_short_name, sub_type FROM subjects WHERE SEM = 5;""")
+            cur.execute("""SELECT distinct sub_short_name, sub_type FROM subjects WHERE SEM = 5 AND sub_id IN 
+                            (SELECT sub_id FROM sub_fac);""")
             for sname, stype in cur.fetchall():
                 if stype in ['lab1', 'lab2', 'lab3']:
                     for duplicate in range(1):
@@ -90,28 +89,28 @@ class create_time_table:
         with sqlite3.connect(path_to_db) as conn:
             cur = conn.cursor()
             cur.execute(queries.view2)
-            cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'A'")
+            cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'a'")
             for row in cur.fetchall():
-                self.var.a_fac[row[0]] = row[1]
-                self.var.fac[row[0]] = row[1]
-                self.var.class_engaged[row[1]] = 0
+                self.a_fac[row[0]] = row[1]
+                self.fac[row[0]] = row[1]
+                self.class_engaged[row[1]] = 0
 
-            cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'B'")
+            cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'b'")
             for row in cur.fetchall():
-                self.var.b_fac[row[0]] = row[1]
-                self.var.fac[row[0]] = row[1]
-                self.var.class_engaged[row[1]] = 0
+                self.b_fac[row[0]] = row[1]
+                self.fac[row[0]] = row[1]
+                self.class_engaged[row[1]] = 0
 
-            cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'C'")
+            cur.execute("SELECT sub_short_name, FAC_SHORT_NAME from view2 WHERE sec = 'c'")
             for row in cur.fetchall():
-                self.var.c_fac[row[0]] = row[1]
-                self.var.fac[row[0]] = row[1]
-                self.var.class_engaged[row[1]] = 0
+                self.c_fac[row[0]] = row[1]
+                self.fac[row[0]] = row[1]
+                self.class_engaged[row[1]] = 0
 
             cur.execute('select distinct  fac_short_name from faculty')
             facs = cur.fetchall()
             for fname in facs:
-                self.var.fac_list.append(fname[0])
+                self.fac_list.append(fname[0])
 
 
     def init_sub_hours(self):
@@ -120,15 +119,15 @@ class create_time_table:
         with sqlite3.connect(path_to_db) as conn:
             cur = conn.cursor()
             cur.execute(queries.view2)
-            cur.execute("SELECT SUB_SHORT_NAME, rem_hours from view2 WHERE sec = 'A'")
+            cur.execute("SELECT lower (SUB_SHORT_NAME), rem_hours from view2 WHERE sec = 'a'")
             for row in cur.fetchall():
-                self.var.a_hours[row[0]] = row[1]
-            cur.execute("SELECT SUB_SHORT_NAME, rem_hours from view2 WHERE sec = 'B'")
+                self.a_hours[row[0]] = row[1]
+            cur.execute("SELECT lower (SUB_SHORT_NAME), rem_hours from view2 WHERE sec = 'b'")
             for row in cur.fetchall():
-                self.var.b_hours[row[0]] = row[1]
-            cur.execute("SELECT SUB_SHORT_NAME, rem_hours from view2 WHERE sec = 'C'")
+                self.b_hours[row[0]] = row[1]
+            cur.execute("SELECT lower (SUB_SHORT_NAME), rem_hours from view2 WHERE sec = 'c'")
             for row in cur.fetchall():
-                self.var.c_hours[row[0]] = row[1]
+                self.c_hours[row[0]] = row[1]
 
 
     def update_subs(self, position, include_others=True, only_others=False):
@@ -144,26 +143,28 @@ class create_time_table:
                 cur.execute('select sname, stype from custom where timing = ? or timing = ?', (position, -1,))
             else:
                 cur.execute('select sname, stype from custom where timing = ?', (position,))
-            self.var.subs.clear()
+            self.subs.clear()
             for sub2, type2 in cur.fetchall():
-                d = (sub2, type2)
-                self.var.subs.append(d)
+                d = (sub2.lower(), type2.lower())
+                self.subs.append(d)
             return
 
 
     def decrement_hours(self,):
         """ function that will decrement faculty engaging hours """
-        for f in self.var.fac_list:
-            if self.var.class_engaged[f] < 1:
-                pass
-            else:
-                self.var.class_engaged[f] -= 1
-
+        for f in self.fac_list:
+            try:
+                if self.class_engaged[f] < 1:
+                    pass
+                else:
+                    self.class_engaged[f] -= 1
+            except:
+                print("subject not found in class_enagaged (key error)")
 
     def get_one_sub(self,position, include_others=True, only_others=False, return_type=False):
         self.update_subs(position, include_others=include_others, only_others=only_others)
-        for sub2, type2 in self.var.subs:
-            if self.var.class_engaged[self.var.fac[sub2]]:
+        for sub2, type2 in self.subs:
+            if self.class_engaged[self.fac[sub2]]:
                 continue
             if return_type:
                 return sub2, type2
@@ -179,165 +180,165 @@ class create_time_table:
     def Spl(self, sub1, position, day):
         """ return value zero represents any sub is not appended to any class"""
         """ return vale 1, spl subject is appended to all the class """
-        if self.var.is_spl_done_for_week:
+        if self.is_spl_done_for_week:
             return 0
-        highest = max(self.var.pos_a, self.var.pos_b, self.var.pos_c)
+        highest = max(self.pos_a, self.pos_b, self.pos_c)
         if highest in [0, 2, 4]:
-            for loop in range(highest - self.var.pos_a):
-                if self.var.pos_a < highest:
+            for loop in range(highest - self.pos_a):
+                if self.pos_a < highest:
                     sub2, type2 = self.get_one_sub(position, only_others=True, return_type=True)
-                    if not self.var.a_hours[sub1] > hours.hour_greaterthan(type2, day):
+                    if not self.a_hours[sub1] > hours.hour_greaterthan(type2, day):
                         continue
-                    self.var.a.append(sub2)
-                    self.var.class_engaged[self.var.a_fac[sub2]] += 1
-                    self.var.a_hours[sub2] -= 1
-                    self.var.pos_a += 1
-            for loop in range(highest - self.var.pos_b):
-                if self.var.pos_b < highest:
+                    self.a.append(sub2)
+                    self.class_engaged[self.a_fac[sub2]] += 1
+                    self.a_hours[sub2] -= 1
+                    self.pos_a += 1
+            for loop in range(highest - self.pos_b):
+                if self.pos_b < highest:
                     sub2, type2 = self.get_one_sub(position, only_others=True, return_type=True)
-                    if not self.var.b_hours[sub1] > hours.hour_greaterthan(type2, day):
+                    if not self.b_hours[sub1] > hours.hour_greaterthan(type2, day):
                         continue
-                    self.var.b.append(sub2)
-                    self.var.class_engaged[self.var.b_fac[sub2]] += 1
-                    self.var.b_hours[sub2] -= 1
-                    self.var.pos_b += 1
-            for loop in range(highest - self.var.pos_c):
-                if self.var.pos_c < highest:
+                    self.b.append(sub2)
+                    self.class_engaged[self.b_fac[sub2]] += 1
+                    self.b_hours[sub2] -= 1
+                    self.pos_b += 1
+            for loop in range(highest - self.pos_c):
+                if self.pos_c < highest:
                     sub2, type2 = self.get_one_sub(position, only_others=True, return_type=True)
-                    if not self.var.c_hours[sub1] > hours.hour_greaterthan(type2, day):
+                    if not self.c_hours[sub1] > hours.hour_greaterthan(type2, day):
                         continue
-                    self.var.c.append(sub2)
-                    self.var.class_engaged[self.var.c_fac[sub2]] += 1
-                    self.var.c_hours[sub2] -= 1
-                    self.var.pos_c += 1
+                    self.c.append(sub2)
+                    self.class_engaged[self.c_fac[sub2]] += 1
+                    self.c_hours[sub2] -= 1
+                    self.pos_c += 1
 
             for i in range(2):
-                self.var.a.append(sub1)
-                self.var.b.append(sub1)
-                self.var.b.append(sub1)
-                self.var.c.append(sub1)
-                self.var.class_engaged[self.var.b_fac[sub1]] += 1
-                self.var.class_engaged[self.var.a_fac[sub1]] += 1
-                self.var.class_engaged[self.var.c_fac[sub1]] += 1
-                self.var.pos_a += 1
-                self.var.pos_b += 1
-                self.var.pos_c += 1
-                self.var.a_hours[sub1] -= 1
-                self.var.b_hours[sub1] -= 1
-                self.var.c_hours[sub1] -= 1
-                self.var.is_spl_done_for_week = True
+                self.a.append(sub1)
+                self.b.append(sub1)
+                self.b.append(sub1)
+                self.c.append(sub1)
+                self.class_engaged[self.b_fac[sub1]] += 1
+                self.class_engaged[self.a_fac[sub1]] += 1
+                self.class_engaged[self.c_fac[sub1]] += 1
+                self.pos_a += 1
+                self.pos_b += 1
+                self.pos_c += 1
+                self.a_hours[sub1] -= 1
+                self.b_hours[sub1] -= 1
+                self.c_hours[sub1] -= 1
+                self.is_spl_done_for_week = True
             return 0
         return -1
 
 
     def xyz(self, position, sub1, type1, sec, _class_var, day):
-        for lb in self.var.labs_done.get(_class_var):
+        for lb in self.labs_done.get(_class_var):
             if sub1 in lb:
                 return position
             else:
                 pass
         if type1 in ['lab1', 'lab2', 'lab3']:
-            if self.var.list_engaging_labs[type1] < 2:
+            if self.list_engaging_labs[type1] < 2:
                 if position + 3 <= 7:
                     for diff in range(3):
                         sec.append(sub1)
                         if _class_var == 'a':
-                            self.var.a_hours[sub1] -= 1
-                            self.var.class_engaged[self.var.a_fac[sub1]] += 1
+                            self.a_hours[sub1] -= 1
+                            self.class_engaged[self.a_fac[sub1]] += 1
                         elif _class_var == 'b':
-                            self.var.b_hours[sub1] -= 1
-                            self.var.class_engaged[self.var.b_fac[sub1]] += 1
+                            self.b_hours[sub1] -= 1
+                            self.class_engaged[self.b_fac[sub1]] += 1
                         elif _class_var == 'c':
-                            self.var.c_hours[sub1] -= 1
-                            self.var.class_engaged[self.var.c_fac[sub1]] += 1
+                            self.c_hours[sub1] -= 1
+                            self.class_engaged[self.c_fac[sub1]] += 1
                         position += 1
                     if _class_var == 'a':
-                        self.var.labs_done['a'].append(sub1)
+                        self.labs_done['a'].append(sub1)
                     if _class_var == 'b':
-                        self.var.labs_done['b'].append(sub1)
+                        self.labs_done['b'].append(sub1)
                     if _class_var == 'c':
-                        self.var.labs_done['c'].append(sub1)
-                    self.var.list_engaging_labs[type1] += 1
+                        self.labs_done['c'].append(sub1)
+                    self.list_engaging_labs[type1] += 1
                     """ adding faculty who are engaging class to decrement list"""
                     # add_fac_to_decrement_it(_class_var, sub1, loop=3)
                     return position
             else:
                 self.get_all_subs(position, include_others=False)
-                for sub1, type1 in self.var.subs:
-                    if type1 not in ['spl'] and self.var.list_engaging_labs[type1] < 2:
-                        for lb in self.var.labs_done.get(_class_var):
+                for sub1, type1 in self.subs:
+                    if type1 not in ['spl'] and self.list_engaging_labs[type1] < 2:
+                        for lb in self.labs_done.get(_class_var):
                             if sub1 in lb:
                                 continue
                             else:
                                 if position + 3 <= 7:
-                                    self.var.list_engaging_labs[type1] += 1
+                                    self.list_engaging_labs[type1] += 1
                                     # add_fac_to_decrement_it(_class_var, sub1, loop=3)
                                     for diff in range(3):
                                         sec.append(sub1)
                                         if _class_var == 'a':
-                                            self.var.a_hours[sub1] -= 1
-                                            self.var.class_engaged[self.var.a_fac[sub1]] += 1
+                                            self.a_hours[sub1] -= 1
+                                            self.class_engaged[self.a_fac[sub1]] += 1
                                         elif _class_var == 'b':
-                                            self.var.b_hours[sub1] -= 1
-                                            self.var.class_engaged[self.var.b_fac[sub1]] += 1
+                                            self.b_hours[sub1] -= 1
+                                            self.class_engaged[self.b_fac[sub1]] += 1
                                         elif _class_var == 'c':
-                                            self.var.c_hours[sub1] -= 1
-                                            self.var.class_engaged[self.var.c_fac[sub1]] += 1
+                                            self.c_hours[sub1] -= 1
+                                            self.class_engaged[self.c_fac[sub1]] += 1
                                         position += 1
                                     if _class_var == 'a':
-                                        self.var.labs_done['a'].append(sub1)
+                                        self.labs_done['a'].append(sub1)
                                     if _class_var == 'b':
-                                        self.var.labs_done['b'].append(sub1)
+                                        self.labs_done['b'].append(sub1)
                                     if _class_var == 'c':
-                                        self.var.labs_done['c'].append(sub1)
+                                        self.labs_done['c'].append(sub1)
                         return position
                 return position
 
 
     def normal_classes(self,position, sub1, type1, sec, _class_var, day):
         if _class_var == 'a':
-            if self.var.a_hours[sub1] > hours.hour_greaterthan(type1, day):
+            if self.a_hours[sub1] > hours.hour_greaterthan(type1, day):
                 sec.append(sub1)
-                self.var.a_hours[sub1] -= 1
-                self.var.class_engaged[self.var.a_fac[sub1]] += 1
+                self.a_hours[sub1] -= 1
+                self.class_engaged[self.a_fac[sub1]] += 1
                 position += 1
                 # add_fac_to_decrement_it(_class_var, sub1)
                 return position
             self.get_all_subs(position, only_others=True)
             for sub1, type1 in subs:
-                if not self.var.a_hours[sub1] > hours.hour_greaterthan(type1, day):
+                if not self.a_hours[sub1] > hours.hour_greaterthan(type1, day):
                     continue
                 sec.append(sub1)
-                self.var.a_hours[sub1] -= 1
-                self.var.class_engaged[self.var.a_fac[sub1]] += 1
+                self.a_hours[sub1] -= 1
+                self.class_engaged[self.a_fac[sub1]] += 1
                 position += 1
                 # add_fac_to_decrement_it(_class_var, sub1)
                 return position
             return position
         if _class_var == 'b':
-            if self.var.b_hours[sub1] > hours.hour_greaterthan(type1, day):
+            if self.b_hours[sub1] > hours.hour_greaterthan(type1, day):
                 sec.append(sub1)
-                self.var.b_hours[sub1] -= 1
-                self.var.class_engaged[self.var.b_fac[sub1]] += 1
+                self.b_hours[sub1] -= 1
+                self.class_engaged[self.b_fac[sub1]] += 1
                 position += 1
                 # add_fac_to_decrement_it(_class_var, sub1)
                 return position
             self.get_all_subs(position, only_others=True)
             for sub1, type1 in subs:
-                if not self.var.b_hours[sub1] > hours.hour_greaterthan(type1, day):
+                if not self.b_hours[sub1] > hours.hour_greaterthan(type1, day):
                     continue
                 sec.append(sub1)
-                self.var.b_hours[sub1] -= 1
-                self.var.class_engaged[self.var.b_fac[sub1]] += 1
+                self.b_hours[sub1] -= 1
+                self.class_engaged[self.b_fac[sub1]] += 1
                 position += 1
                 # add_fac_to_decrement_it(_class_var, sub1)
                 return position
             return position
         if _class_var == 'c':
-            if self.var.c_hours[sub1] > hours.hour_greaterthan(type1, day):
+            if self.c_hours[sub1] > hours.hour_greaterthan(type1, day):
                 sec.append(sub1)
-                self.var.c_hours[sub1] -= 1
-                self.var.class_engaged[self.var.c_fac[sub1]] += 1
+                self.c_hours[sub1] -= 1
+                self.class_engaged[self.c_fac[sub1]] += 1
                 position += 1
                 # add_fac_to_decrement_it(_class_var, sub1)
                 return position
@@ -346,8 +347,8 @@ class create_time_table:
                 if not c_hours[sub1] > hours.hour_greaterthan(type1, day):
                     continue
                 sec.append(sub1)
-                self.var.c_hours[sub1] -= 1
-                self.var.class_engaged[self.var.c_fac[sub1]] += 1
+                self.c_hours[sub1] -= 1
+                self.class_engaged[self.c_fac[sub1]] += 1
                 position += 1
                 # add_fac_to_decrement_it(_class_var, sub1)
                 return position
@@ -363,21 +364,21 @@ class create_time_table:
         type1 = None
         sub1 = None
         for day in range(6):
-            self.var.class_engaged = dict.fromkeys(self.var.class_engaged, 0)
-            self.var.list_engaging_labs = dict.fromkeys(self.var.list_engaging_labs, 0)
+            self.class_engaged = dict.fromkeys(self.class_engaged, 0)
+            self.list_engaging_labs = dict.fromkeys(self.list_engaging_labs, 0)
             i = 0
-            self.var.pos_a = 0
-            self.var.pos_b = 0
-            self.var.pos_c = 0
-            self.var.a.clear()
-            self.var.b.clear()
-            self.var.c.clear()
+            self.pos_a = 0
+            self.pos_b = 0
+            self.pos_c = 0
+            self.a.clear()
+            self.b.clear()
+            self.c.clear()
 
             for hour in range(12):
                 self.decrement_hours()
-                if isinstance(self.var.pos_a, int) and self.var.pos_a < 7:
+                if isinstance(self.pos_a, int) and self.pos_a < 7:
                     if day >= 3:
-                        sub_dict = {key: val for key, val in sorted(self.var.a_hours.items(), key=lambda ele: ele[1], reverse=True)}
+                        sub_dict = {key: val for key, val in sorted(self.a_hours.items(), key=lambda ele: ele[1], reverse=True)}
                         for sub, hour_rem in sub_dict.items():
                             sub1 = sub
                             hour_left = hour_rem
@@ -386,52 +387,52 @@ class create_time_table:
                                 cur.execute('select sub_type from subjects where sub_short_name = ?', (sub,))
                                 type1 = cur.fetchone()[0]
                             """ not more than two subjects per day """
-                            if not self.var.a_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            if not self.a_hours[sub1] > hours.hour_greaterthan(type1, day):
                                 continue
-                            if self.var.class_engaged[self.var.a_fac[sub1]]:
+                            if self.class_engaged[self.a_fac[sub1]]:
                                 continue
                             if type1 in ['spl']:
-                                if self.var.is_spl_done_for_week:
+                                if self.is_spl_done_for_week:
                                     continue
-                                return_val = self.Spl(sub1, self.var.pos_a, day)
-                                self.var.is_spl_done_for_week = True
+                                return_val = self.Spl(sub1, self.pos_a, day)
+                                self.is_spl_done_for_week = True
                                 break
                             if type1 in ['lab1', 'lab2', 'lab3']:
-                                if self.var.a_hours[sub1]:
-                                    self.var.pos_a = self.xyz(self.var.pos_a, sub1, type1, self.var.a, 'a', day)
+                                if self.a_hours[sub1]:
+                                    self.pos_a = self.xyz(self.pos_a, sub1, type1, self.a, 'a', day)
                                 break
                             else:
-                                if self.var.a_hours[sub1]:
-                                    self.var.pos_a = self.normal_classes(self.var.pos_a, sub1, type1, self.var.a, 'a', day)
+                                if self.a_hours[sub1]:
+                                    self.pos_a = self.normal_classes(self.pos_a, sub1, type1, self.a, 'a', day)
                                 break
                     else:
-                        self.update_subs(self.var.pos_a)
-                        shuffle(self.var.subs)
-                        for sub in self.var.subs:
+                        self.update_subs(self.pos_a)
+                        shuffle(self.subs)
+                        for sub in self.subs:
                             sub1 = sub[0]
                             type1 = sub[1]
-                            if not self.var.a_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            if not self.a_hours[sub1] > hours.hour_greaterthan(type1, day):
                                 continue
-                            if self.var.class_engaged[self.var.a_fac[sub1]]:
+                            if self.class_engaged[self.a_fac[sub1]]:
                                 continue
                             if type1 in ['spl']:
-                                if self.var.is_spl_done_for_week:
+                                if self.is_spl_done_for_week:
                                     continue
-                                return_val = self.Spl(sub1, self.var.pos_a, day)
-                                self.var.is_spl_done_for_week = True
+                                return_val = self.Spl(sub1, self.pos_a, day)
+                                self.is_spl_done_for_week = True
                                 break
                             if type1 in ['lab1', 'lab2', 'lab3']:
-                                if self.var.a_hours[sub1]:
-                                    self.var.pos_a = self.xyz(self.var.pos_a, sub1, type1, self.var.a, 'a', day)
+                                if self.a_hours[sub1]:
+                                    self.pos_a = self.xyz(self.pos_a, sub1, type1, self.a, 'a', day)
                                 break
                             else:
-                                if self.var.a_hours[sub1]:
-                                    self.var.pos_a = self.normal_classes(self.var.pos_a, sub1, type1, self.var.a, 'a', day)
+                                if self.a_hours[sub1]:
+                                    self.pos_a = self.normal_classes(self.pos_a, sub1, type1, self.a, 'a', day)
                                 break
 
-                if isinstance(self.var.pos_b, int) and self.var.pos_b < 7:
+                if isinstance(self.pos_b, int) and self.pos_b < 7:
                     if day >= 3:
-                        sub_dict = {key: val for key, val in sorted(self.var.b_hours.items(), key=lambda ele: ele[1], reverse=True)}
+                        sub_dict = {key: val for key, val in sorted(self.b_hours.items(), key=lambda ele: ele[1], reverse=True)}
                         for sub, hour_left in sub_dict.items():
                             sub1 = sub
                             hour_left = hour_rem
@@ -439,50 +440,50 @@ class create_time_table:
                                 cur = conn.cursor()
                                 cur.execute('select sub_type from subjects where sub_short_name = ?', (sub,))
                                 type1 = cur.fetchone()[0]
-                            if not self.var.b_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            if not self.b_hours[sub1] > hours.hour_greaterthan(type1, day):
                                 continue
-                            if self.var.class_engaged[self.var.b_fac[sub1]]:
+                            if self.class_engaged[self.b_fac[sub1]]:
                                 continue
                             if type1 in ['spl']:
-                                if self.var.is_spl_done_for_week:
+                                if self.is_spl_done_for_week:
                                     continue
-                                return_val = self.Spl(sub1, self.var.pos_b, day)
+                                return_val = self.Spl(sub1, self.pos_b, day)
                                 break
                             if type1 in ['lab1', 'lab2', 'lab3']:
-                                if self.var.b_hours[sub1]:
-                                    self.var.pos_b = self.xyz(self.var.pos_b, sub1, type1, self.var.b, 'b', day)
+                                if self.b_hours[sub1]:
+                                    self.pos_b = self.xyz(self.pos_b, sub1, type1, self.b, 'b', day)
                                 break
                             else:
-                                if self.var.b_hours[sub1]:
-                                    self.var.pos_b = self.normal_classes(self.var.pos_b, sub1, type1, self.var.b, 'b', day)
+                                if self.b_hours[sub1]:
+                                    self.pos_b = self.normal_classes(self.pos_b, sub1, type1, self.b, 'b', day)
                                 break
                     else:
-                        self.update_subs(self.var.pos_b)
-                        shuffle(self.var.subs)
-                        for sub in self.var.subs:
+                        self.update_subs(self.pos_b)
+                        shuffle(self.subs)
+                        for sub in self.subs:
                             sub1 = sub[0]
                             type1 = sub[1]
-                            if not self.var.b_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            if not self.b_hours[sub1] > hours.hour_greaterthan(type1, day):
                                 continue
-                            if self.var.class_engaged[self.var.b_fac[sub1]]:
+                            if self.class_engaged[self.b_fac[sub1]]:
                                 continue
                             if type1 in ['spl']:
-                                if self.var.is_spl_done_for_week:
+                                if self.is_spl_done_for_week:
                                     continue
-                                return_val = self.Spl(sub1, self.var.pos_b, day)
+                                return_val = self.Spl(sub1, self.pos_b, day)
                                 break
                             if type1 in ['lab1', 'lab2', 'lab3']:
-                                if self.var.b_hours[sub1]:
-                                    self.var.pos_b = self.xyz(self.var.pos_b, sub1, type1, self.var.b, 'b', day)
+                                if self.b_hours[sub1]:
+                                    self.pos_b = self.xyz(self.pos_b, sub1, type1, self.b, 'b', day)
                                 break
                             else:
-                                if self.var.b_hours[sub1]:
-                                    self.var.pos_b = self.normal_classes(self.var.pos_b, sub1, type1, self.var.b, 'b', day)
+                                if self.b_hours[sub1]:
+                                    self.pos_b = self.normal_classes(self.pos_b, sub1, type1, self.b, 'b', day)
                                 break
 
-                if isinstance(self.var.pos_c, int) and self.var.pos_c < 7:
+                if isinstance(self.pos_c, int) and self.pos_c < 7:
                     if day >= 3:
-                        sub_dict = {key: val for key, val in sorted(self.var.c_hours.items(), key=lambda ele: ele[1], reverse=True)}
+                        sub_dict = {key: val for key, val in sorted(self.c_hours.items(), key=lambda ele: ele[1], reverse=True)}
                         for sub, hour_left in sub_dict.items():
                             sub1 = sub
                             hour_left = sub
@@ -490,71 +491,94 @@ class create_time_table:
                                 cur = conn.cursor()
                                 cur.execute('select sub_type from subjects where sub_short_name = ?', (sub,))
                                 type1 = cur.fetchone()[0]
-                            if not hours.hour_greaterthan(type1, day) < self.var.c_hours[sub1]:
+                            if not hours.hour_greaterthan(type1, day) < self.c_hours[sub1]:
                                 continue
-                            if self.var.class_engaged[self.var.c_fac[sub1]]:
+                            if self.class_engaged[self.c_fac[sub1]]:
                                 continue
                             if type1 in ['spl']:
-                                if self.var.is_spl_done_for_week:
+                                if self.is_spl_done_for_week:
                                     continue
-                                return_val = self.Spl(sub1, self.var.pos_c, day)
-                                self.var.is_spl_done_for_week = True
+                                return_val = self.Spl(sub1, self.pos_c, day)
+                                self.is_spl_done_for_week = True
                                 break
                             if type1 in ['lab1', 'lab2', 'lab3']:
-                                if self.var.c_hours[sub1]:
-                                    self.var.pos_c = self.xyz(self.var.pos_c, sub1, type1, self.var.c, 'c', day)
+                                if self.c_hours[sub1]:
+                                    self.pos_c = self.xyz(self.pos_c, sub1, type1, self.c, 'c', day)
                                 break
                             else:
-                                if self.var.c_hours[sub1]:
-                                    self.var.pos_c = self.normal_classes(self.var.pos_c, sub1, type1, self.var.c, 'c', day)
+                                if self.c_hours[sub1]:
+                                    self.pos_c = self.normal_classes(self.pos_c, sub1, type1, self.c, 'c', day)
                                 break
                     else:
-                        self.update_subs(self.var.pos_c)
-                        shuffle(self.var.subs)
-                        for sub in self.var.subs:
+                        self.update_subs(self.pos_c)
+                        shuffle(self.subs)
+                        for sub in self.subs:
                             sub1 = sub[0]
                             type1 = sub[1]
-                            if not self.var.c_hours[sub1] > hours.hour_greaterthan(type1, day):
+                            if not self.c_hours[sub1] > hours.hour_greaterthan(type1, day):
                                 continue
-                            if self.var.class_engaged[self.var.c_fac[sub1]]:
+                            if self.class_engaged[self.c_fac[sub1]]:
                                 continue
                             if type1 in ['spl']:
-                                if self.var.is_spl_done_for_week:
+                                if self.is_spl_done_for_week:
                                     continue
-                                return_val = self.Spl(sub1, self.var.pos_c, day)
-                                self.var.is_spl_done_for_week = True
+                                return_val = self.Spl(sub1, self.pos_c, day)
+                                self.is_spl_done_for_week = True
                                 break
                             if type1 in ['lab1', 'lab2', 'lab3']:
-                                if self.var.c_hours[sub1]:
-                                    self.var.pos_c = self.xyz(self.var.pos_c, sub1, type1, self.var.c, 'c', day)
+                                if self.c_hours[sub1]:
+                                    self.pos_c = self.xyz(self.pos_c, sub1, type1, self.c, 'c', day)
                                 break
                             else:
-                                if self.var.c_hours[sub1]:
-                                    self.var.pos_c = self.normal_classes(self.var.pos_c, sub1, type1, self.var.c, 'c', day)
+                                if self.c_hours[sub1]:
+                                    self.pos_c = self.normal_classes(self.pos_c, sub1, type1, self.c, 'c', day)
                                 break
-                self.var.decrement_it.clear()
-                for i in range(7 - len(self.var.a)):
+                self.decrement_it.clear()
+            with sqlite3.connect(path_to_db) as con:
+                cur = con.cursor()
+                # cur.execute(queries.memory_a)
+                # cur.execute(queries.memory_b)
+                # cur.execute(queries.memory_c)
+                for i in range(7 - len(self.a)):
                     """ double ckeck by for & if """
-                    if len(self.var.a) < 7:
-                        self.var.x.append('__')
-                cur.execute("insert into memory_a values (?,?,?,?,?,?,?,)",
-                            (self.var.a[0], self.var.a[1], self.var.a[2], self.var.a[3], self.var.a[4], self.var.a[5], self.var.a[6]), )
-                for i in range(7 - len(self.var.b)):
+                    if len(self.a) < 7:
+                        self.a.append('__')
+                """" for sec a """
+                try:
+                    cur.execute("update memory_a set period1 = ?, period2 = ?, period3 = ?,period4 = ?,period5 = ?,period6 = ?,period7 = ? where id=?",
+                            (self.a[0], self.a[1], self.a[2], self.a[3], self.a[4], self.a[5], self.a[6], day+1, ))
+                    con.commit()
+                except:
+                    print(len(self.a), 'lenght of var a')
+
+                for i in range(7 - len(self.b)):
                     """ double ckeck by for & if """
-                    if len(self.var.b) < 7:
-                        self.var.b.append('__')
-                cur.execute("insert into memory_b values (?,?,?,?,?,?,?,)",
-                            (self.var.b[0], self.var.b[1], self.var.b[2], self.var.b[3], self.var.b[4], self.var.b[5], self.var.b[6]), )
-                for i in range(7 - len(self.var.c)):
+                    if len(self.b) < 7:
+                        self.b.append('__')
+                """" for sec b """
+                try:
+                    cur.execute("update memory_b set period1 = ?, period2 = ?, period3 = ?,period4 = ?,period5 = ?,period6 = ?,period7 = ? where id=?",
+                            (self.b[0], self.b[1], self.b[2], self.b[3], self.b[4], self.b[5], self.b[6],day+1, ))
+                    con.commit()
+                except:
+                    print(len(self.b), 'lenght of var b')
+
+
+                for i in range(7 - len(self.c)):
                     """ double ckeck by for & if """
-                    if len(self.var.c) < 7:
-                        self.var.c.append('__')
-                cur.execute("insert into memory_c values (?,?,?,?,?,?,?,)",
-                            (self.var.c[0], self.var.c[1], self.var.c[2], self.var.c[3], self.var.c[4], self.var.c[5], self.var.c[6]), )
-            self.var.x.append(self.var.a.copy())
-            self.var.y.append(self.var.b.copy())
-            self.var.z.append(self.var.b.copy())
-        return self.var.x, self.var.y, self.var.z
+                    if len(self.c) < 7:
+                        self.c.append('__')
+                """ for sec c """
+                try:
+                    cur.execute("update memory_c set period1 = ?, period2 = ?, period3 = ?,period4 = ?,period5 = ?,period6 = ?,period7 = ? where id=?",
+                            (self.c[0], self.c[1], self.c[2], self.c[3], self.c[4], self.c[5], self.c[6],day+1, ))
+                    con.commit()
+                except:
+                    print(len(self.c), 'lenght of var c')
+            self.x.append(self.a.copy())
+            self.y.append(self.b.copy())
+            self.z.append(self.b.copy())
+        return self.x, self.y, self.z
 
 
 # time_table = create_time_table()
