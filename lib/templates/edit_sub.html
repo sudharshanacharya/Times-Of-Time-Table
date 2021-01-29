@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Subject Details</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <style>
         body {
             margin: 0;
@@ -34,8 +35,8 @@
         }
         #leftbox {
             float:left;
-            background:cornsilk;
-            width:100%;
+            background:#EEEBEB;
+            width:95%;
             /*height:280px;*/
             border: 1px solid black;
             /*border-bottom-color: #3e8e41;*/
@@ -67,54 +68,59 @@
     <a  href={{url_for('index')}}>Home</a>
     <a href={{url_for('fac_detail')}}>EDIT FACULTY</a>
 
-    <a class="active" href={{url_for('sub_details')}}> ADD SUBJECTS</a>
+    <a class="active" href={{url_for('sub_details')}}> EDIT SUBJECTS</a>
     <a href={{url_for('assign')}}> ASSIGN SUBJECTS</a>
     <a href={{url_for('time_table')}}> TIMETABLE</a>
 </div>
 
 <h1>Subject Details</h1>
-<div>
-    <div id="leftbox">
-        <table>
-            <thead>
-            <td>Subject name</td>
-            <td>short name</td>
-            <td>Subject Code</td>
-            <td>Subject Credit</td>
-            <td>Subject Type</td>
-            <td>Sem</td>
+<div id="leftbox">
+    <table>
+        <thead>
+        <td>Subject name</td>
+        <td>short name</td>
+        <td>Subject Code</td>
+        <td>Subject Credit</td>
+        <td>Subject Type</td>
+        <td>Sem</td>
 
-            </thead>
-            <form action="{{url_for('get_sub_info')}}" method=post>
-                <tr>
-                    <td><input type="text" name="sname"></td>
-                    <td><input type="text" name="ssname"></td>
-                    <td><input type="text" name="scode"></td>
-                    <td><input type="text" name="scredit"></td>
-                    <td><input type="text" name="stype"></td>
-                    <td><input type="text" name="sem"></td>
-                    <td>
-                        <button class="btn success" type="submit">+</button>
-                    </td>
-                </tr>
-            </form>
-            {% for sub in query %}
+        </thead>
+        <form action="{{url_for('get_sub_info')}}" method=post>
             <tr>
-                <td>{{ sub[0] }}</td>
-                <td>{{ sub[1] }}</td>
-                <td>{{ sub[2] }}</td>
-                <td>{{ sub[3] }}</td>
-                <td>{{ sub[4] }}</td>
-                <td>{{ sub[5] }}</td>
+                <td><input type="text" name="sname"></td>
+                <td><input type="text" name="ssname"></td>
+                <td><input type="text" name="scode"></td>
+                <td><input type="text" name="scredit"></td>
+                <td><input type="text" name="stype"></td>
+                <td><input type="text" name="sem"></td>
                 <td>
-                    <form action="{{url_for('del_sub_info')}}" method=post>
-                        <button class="btn danger" type="submit" name="delete" value={{sub[1]}}>-</button>
-                    </form>
-                    <br>
+                    <button class="btn success" type="submit">+</button>
+                </td>
             </tr>
-            {% endfor %}
-        </table>
-    </div>
+        </form>
+        {% for sub in query %}
+        <tr>
+            <form action="{{url_for('edit_sub_info')}}" method=post>
+                <td><input type="text" name="sname" value="{{sub[0]}}"></td>
+                <td><input type="text" name="ssname" value="{{sub[1]}}"></td>
+                <td><input type="text" name="scode" value="{{sub[2]}}"></td>
+                <td><input type="text" name="scredit" value="{{sub[3]}}"></td>
+                <td><input type="text" name="stype" value="{{sub[4]}}"></td>
+                <td><input type="text" name="sem" value="{{sub[5]}}"></td>
+                <td>
+                    <button class="btn btn-default btn-sm" type="submit" name="refresh" value={{sub[1]}}>
+                        <span class="glyphicon glyphicon-refresh"></span>
+                    </button>
+                </td>
+            </form>
+            <td>
+                <form action="{{url_for('del_sub_info')}}" method=post>
+                    <button class="btn danger" type="submit" name="delete" value={{sub[1]}}>-</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 </body>
 </html>

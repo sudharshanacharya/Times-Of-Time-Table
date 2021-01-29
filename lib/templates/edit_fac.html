@@ -5,6 +5,10 @@
     <title>Faculty details</title>
     <style>
         body {
+            background-image: url("https://edge.alluremedia.com.au/m/g/2017/12/book-stack.jpg");
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
             margin: 0;
             font-family: Arial, Helvetica, sans-serif;
         }
@@ -34,7 +38,8 @@
         }
         #leftbox {
             float:left;
-            background:cornsilk;
+            background: #C04848;
+            /*margin-left: 8%;*/
             /*width:25%;*/
             /*height:280px;*/
             border: 1px solid black;
@@ -118,15 +123,15 @@
     <a  href={{url_for('index')}}>Home</a>
     <a class="active" href={{url_for('fac_detail')}}>EDIT FACULTY</a>
 
-    <a href={{url_for('sub_details')}}> ADD SUBJECTS</a>
+    <a href={{url_for('sub_details')}}> EDIT SUBJECTS</a>
     <a href={{url_for('assign')}}> ASSIGN SUBJECTS</a>
     <a href={{url_for('time_table')}}> TIMETABLE</a>
 </div>
 
 
-<h1>Faculty Details</h1>
-<div id = "boxes">
-    <div id = "leftbox">
+<h1 style="padding-left: 8%">Faculty Details</h1>
+<div id = "leftbox">
+    <div >
         <table>
             <thead>
             <td>Faculty name</td>
@@ -154,11 +159,11 @@
         </table>
     </div>
 
-    <div id="middlebox">
-        <p> Edit faculty db -------> <a href="{{ url_for('fac_detail')}}"> here </a>
-        <p> Edit subjects db ------> <a href="{{url_for('sub_details')}}"> here </a>
-        <p> Edit sub_fac relation -> <a href="{{url_for('assign')}}"> here</a>
-    </div>
+<!--    <div id="middlebox">-->
+<!--        <p> Edit faculty db -&#45;&#45;&#45;&#45;&ndash;&gt; <a href="{{ url_for('fac_detail')}}"> here </a>-->
+<!--        <p> Edit subjects db &#45;&#45;&#45;&#45;&ndash;&gt; <a href="{{url_for('sub_details')}}"> here </a>-->
+<!--        <p> Edit sub_fac relation -> <a href="{{url_for('assign')}}"> here</a>-->
+<!--    </div>-->
 
     <!-- The modal -->
     <div id="myModal" class="modal">
